@@ -4,7 +4,7 @@ package wallet
 import "github.com/blockchain/wallet-adapter/types"
 
 // WalletDAI 钱包数据访问接口，供 flow 与 TransactionDecoder 在构建/验证时回调查询。
-// 调用 flow.BuildTransaction / BuildSummaryTransaction / SendTransaction 时 wrapper 不可为 nil（需调用 SignTxData 或校验）；
+// 调用 flow.BuildTransaction / BuildSummaryTransaction / SendTransaction 时 wrapper 不可为 nil（需调用 SignPendingTxData 或校验）；
 // decoder 内部回调查询时 wrapper 可为 nil 表示不回查。实现方仅实现需要的方法即可，未实现由 WalletDAIBase 返回“未实现”。
 type WalletDAI interface {
 	// GetAssetsAccountInfo 根据账户 ID 查询资产账户信息。
@@ -23,9 +23,9 @@ type WalletDAI interface {
 	GetAddressExtParam(address string, key string) (interface{}, error)
 	// GetTransactionByTxID 根据交易 ID 与链标识查询交易记录，用于校验、补扫等。
 	GetTransactionByTxID(txID, symbol string) ([]*types.Transaction, error)
-	// SignTxData 对原始交易 JSON（rawTx）做业务侧签名，返回填充了 DataSign/TradeSign 的 PendingSignTx，用于保证创建交易单数据有效性；
+	// SignPendingTxData 对原始交易 JSON（rawTx）做业务侧签名，返回填充了 DataSign/TradeSign 的 PendingSignTx，用于保证创建交易单数据有效性；
 	// SendTransaction 广播前会再次调用本方法复算 DataSign/TradeSign，用于校验 Data 未被篡改。
-	SignTxData(txJSON []byte) (*types.PendingSignTx, error)
+	SignPendingTxData(txJSON []byte) (*types.PendingSignTx, error)
 }
 
 // WalletDAIBase 为 WalletDAI 的默认未实现基类，所有方法均返回“未实现”错误；
@@ -56,8 +56,8 @@ func (WalletDAIBase) GetAddressExtParam(address string, key string) (interface{}
 func (WalletDAIBase) GetTransactionByTxID(txID, symbol string) ([]*types.Transaction, error) {
 	return nil, errNotImplement("GetTransactionByTxID")
 }
-func (WalletDAIBase) SignTxData(txJSON []byte) (*types.PendingSignTx, error) {
-	return nil, errNotImplement("SignTxData")
+func (WalletDAIBase) SignPendingTxData(txJSON []byte) (*types.PendingSignTx, error) {
+	return nil, errNotImplement("SignPendingTxData")
 }
 
 func errNotImplement(method string) error {

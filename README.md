@@ -33,7 +33,7 @@ wallet-adapter/
 │   ├── config.go             # AssetsConfig
 │   └── registry.go           # RegAdapter、GetAdapter、GetTransactionDecoder 等
 ├── flow/                     # 构建与广播流程（入口：BuildTransaction/BuildSummaryTransaction/SendTransaction）
-│   └── flow.go               # 调 decoder 构建 rawTx，再调 wrapper.SignTxData 得 PendingSignTx；广播前校验 DataSign/TradeSign
+│   └── flow.go               # 调 decoder 构建 rawTx，再调 wrapper.SignPendingTxData 得 PendingSignTx；广播前校验 DataSign/TradeSign
 └── scanner/                  # 区块扫描器
     └── scanner.go            # BlockScanner、BlockchainDAI、Base
 ```
@@ -85,7 +85,7 @@ rawTx := &adapter.RawTransaction{
     Required: 1,
 }
 
-// 3. 调用 flow 构建待签名交易单（decoder 构建 rawTx → wrapper.SignTxData 填 DataSign/TradeSign → 返回 PendingSignTx）
+// 3. 调用 flow 构建待签名交易单（decoder 构建 rawTx → wrapper.SignPendingTxData 填 DataSign/TradeSign → 返回 PendingSignTx）
 //    wrapper 实现 adapter.WalletDAI，BuildTransaction/SendTransaction 时不可为 nil
 pendingTx, err := adapter.BuildTransaction(decoder, wrapper, rawTx)
 if err != nil {

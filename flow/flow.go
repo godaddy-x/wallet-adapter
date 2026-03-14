@@ -28,7 +28,7 @@ func GetRandomSecure(l int) ([]byte, error) {
 // BuildTransaction 构建普通交易单：
 // 1) decoder 负责构建 rawTx（rawHex/fees/sigParts 等）
 // 2) flow 负责补充 createTime/createNonce/txType 并序列化为 JSON
-// 3) wrapper 负责对 rawTx JSON 做业务侧签名，返回 PendingSignTx（含 dataSign/tradeSign）
+// 3) wrapper.SignPendingTxData 对 rawTx JSON 做业务侧签名，返回 PendingSignTx（含 dataSign/tradeSign）
 // 重要：PendingSignTx.Data 必须使用 originalTxJSON 副本，避免 wrapper 内部修改 txJSON 影响最终提交数据
 func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, rawTx *types.RawTransaction) (*types.PendingSignTx, error) {
 	if d == nil {
@@ -57,7 +57,7 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	}
 	originalTxJSON := string(txJSON) // 重要必须：获得副本可无视回调函数修改 txJSON 交易单
 
-	signData, err := wrapper.SignTxData(txJSON)
+	signData, err := wrapper.SignPendingTxData(txJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 		}
 		originalTxJSON := string(txJSON) // 重要必须：获得副本可无视回调函数修改 txJSON 交易单
 
-		signData, err := wrapper.SignTxData(txJSON)
+		signData, err := wrapper.SignPendingTxData(txJSON)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pen
 		return nil, errors.New("pendingTx.signerList is nil")
 	}
 
-	checkData, err := wrapper.SignTxData([]byte(pendingTx.Data))
+	checkData, err := wrapper.SignPendingTxData([]byte(pendingTx.Data))
 	if err != nil {
 		return nil, err
 	}
