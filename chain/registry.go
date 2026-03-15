@@ -1,7 +1,10 @@
 package chain
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/blockchain/wallet-adapter/decoder"
@@ -97,4 +100,13 @@ func ListSymbols() []string {
 		symbols = append(symbols, s)
 	}
 	return symbols
+}
+
+// GenContractID 合约ID：symbol_address 的 SHA256 再 Base64 编码
+func GenContractID(symbol, address string) string {
+	if !strings.HasPrefix(address, "0x") {
+		address = "0x" + address
+	}
+	sum := sha256.Sum256([]byte(fmt.Sprintf("%v_%v", symbol, address)))
+	return base64.StdEncoding.EncodeToString(sum[:])
 }

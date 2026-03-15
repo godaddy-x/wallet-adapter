@@ -4,7 +4,6 @@ package flow
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"github.com/blockchain/wallet-adapter/decoder"
 	"github.com/blockchain/wallet-adapter/types"
 	"github.com/blockchain/wallet-adapter/wallet"
+	"github.com/mailru/easyjson"
 )
 
 // GetRandomSecure 使用加密安全的随机数生成器生成指定字节数组（推荐）
@@ -51,7 +51,7 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	rawTx.CreateNonce = hex.EncodeToString(nonce)
 	rawTx.TxType = 0
 
-	txJSON, err := json.Marshal(rawTx)
+	txJSON, err := easyjson.Marshal(rawTx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 		rawTx.CreateNonce = hex.EncodeToString(nonce)
 		rawTx.TxType = 1
 
-		txJSON, err := json.Marshal(v)
+		txJSON, err := easyjson.Marshal(rawTx)
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +161,7 @@ func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pen
 	}
 
 	rawTx := &types.RawTransaction{}
-	if err := json.Unmarshal([]byte(pendingTx.Data), rawTx); err != nil {
+	if err := easyjson.Unmarshal([]byte(pendingTx.Data), rawTx); err != nil {
 		return nil, fmt.Errorf("rawTx json error: %w", err)
 	}
 	for accountID, keySignatures := range rawTx.Signatures {
