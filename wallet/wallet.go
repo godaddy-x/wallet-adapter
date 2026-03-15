@@ -9,14 +9,14 @@ import "github.com/blockchain/wallet-adapter/types"
 type WalletDAI interface {
 	// GetAssetsAccountInfo 根据账户 ID 查询资产账户信息。
 	GetAssetsAccountInfo(accountID string) (*types.AssetsAccount, error)
-	// GetAssetsAccountList 分页查询资产账户列表，lastID 为上一页最后一条 ID，0 表示首页；cols 可选指定返回列。
-	GetAssetsAccountList(lastID int64, cols ...interface{}) ([]*types.AssetsAccount, error)
+	// GetAssetsAccountList 分页查询资产账户列表。countQ 是否查询总条数（为 true 时返回的 int64 为总条数）；lastID 为上一页最后一条 ID，0 表示首页；limit 每页条数；cols 可选指定返回列。
+	GetAssetsAccountList(countQ bool, lastID, limit int64, cols ...interface{}) ([]*types.AssetsAccount, int64, error)
 	// GetAssetsAccountByAddress 根据地址查询所属资产账户。
 	GetAssetsAccountByAddress(address string) (*types.AssetsAccount, error)
 	// GetAddress 根据地址查询地址详情（含公钥、标签等）。
 	GetAddress(address string) (*types.Address, error)
-	// GetAddressList 分页查询地址列表，lastID 为上一页最后一条 ID，0 表示首页；cols 可选指定返回列。
-	GetAddressList(lastID int64, cols ...interface{}) ([]*types.Address, error)
+	// GetAddressList 分页查询地址列表。countQ 是否查询总条数（为 true 时返回的 int64 为总条数）；lastID 为上一页最后一条 ID，0 表示首页；limit 每页条数；cols 可选指定返回列。
+	GetAddressList(countQ bool, lastID, limit int64, cols ...interface{}) ([]*types.Address, int64, error)
 	// SetAddressExtParam 设置地址扩展参数，key 为业务自定义键。
 	SetAddressExtParam(address string, key string, val interface{}) error
 	// GetAddressExtParam 获取地址扩展参数。
@@ -35,8 +35,8 @@ type WalletDAIBase struct{}
 func (WalletDAIBase) GetAssetsAccountInfo(accountID string) (*types.AssetsAccount, error) {
 	return nil, errNotImplement("GetAssetsAccountInfo")
 }
-func (WalletDAIBase) GetAssetsAccountList(lastID int64, cols ...interface{}) ([]*types.AssetsAccount, error) {
-	return nil, errNotImplement("GetAssetsAccountList")
+func (WalletDAIBase) GetAssetsAccountList(countQ bool, lastID, limit int64, cols ...interface{}) ([]*types.AssetsAccount, int64, error) {
+	return nil, 0, errNotImplement("GetAssetsAccountList")
 }
 func (WalletDAIBase) GetAssetsAccountByAddress(address string) (*types.AssetsAccount, error) {
 	return nil, errNotImplement("GetAssetsAccountByAddress")
@@ -44,8 +44,8 @@ func (WalletDAIBase) GetAssetsAccountByAddress(address string) (*types.AssetsAcc
 func (WalletDAIBase) GetAddress(address string) (*types.Address, error) {
 	return nil, errNotImplement("GetAddress")
 }
-func (WalletDAIBase) GetAddressList(lastID int64, cols ...interface{}) ([]*types.Address, error) {
-	return nil, errNotImplement("GetAddressList")
+func (WalletDAIBase) GetAddressList(countQ bool, lastID, limit int64, cols ...interface{}) ([]*types.Address, int64, error) {
+	return nil, 0, errNotImplement("GetAddressList")
 }
 func (WalletDAIBase) SetAddressExtParam(address string, key string, val interface{}) error {
 	return errNotImplement("SetAddressExtParam")

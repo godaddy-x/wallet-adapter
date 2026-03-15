@@ -423,13 +423,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes1(in *jlexer.Lex
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.AddressStartIndex = int(in.Int())
+				out.AddressStartIndex = int64(in.Int64())
 			}
 		case "addressLimit":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.AddressLimit = int(in.Int())
+				out.AddressLimit = int64(in.Int64())
 			}
 		case "confirms":
 			if in.IsNull() {
@@ -513,12 +513,12 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes1(out *jwriter.W
 	{
 		const prefix string = ",\"addressStartIndex\":"
 		out.RawString(prefix)
-		out.Int(int(in.AddressStartIndex))
+		out.Int64(int64(in.AddressStartIndex))
 	}
 	{
 		const prefix string = ",\"addressLimit\":"
 		out.RawString(prefix)
-		out.Int(int(in.AddressLimit))
+		out.Int64(int64(in.AddressLimit))
 	}
 	{
 		const prefix string = ",\"confirms\":"
@@ -1771,7 +1771,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(in *jlexer.Lex
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.ID = string(in.String())
+				out.ID = int64(in.Int64())
 			}
 		case "walletID":
 			if in.IsNull() {
@@ -1877,7 +1877,7 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(out *jwriter.W
 	{
 		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.ID))
+		out.Int64(int64(in.ID))
 	}
 	{
 		const prefix string = ",\"walletID\":"
@@ -1989,7 +1989,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes10(in *jlexer.Le
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.ID = string(in.String())
+				out.ID = int64(in.Int64())
 			}
 		case "accountID":
 			if in.IsNull() {
@@ -2056,7 +2056,7 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes10(out *jwriter.
 	{
 		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.ID))
+		out.Int64(int64(in.ID))
 	}
 	{
 		const prefix string = ",\"accountID\":"

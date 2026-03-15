@@ -31,9 +31,9 @@ type SmartContract struct {
 //easyjson:json
 type PendingSignTx struct {
 	Sid        string            `json:"sid"`
-	Data       string            `json:"data"`       // 原始交易单 JSON，全程不变
-	DataSign   string            `json:"dataSign"`   // 构建时确定，保证 Data 不被篡改
-	TradeSign  string            `json:"tradeSign"`  // 构建时确定，保证 Data 不被篡改
+	Data       string            `json:"data"`      // 原始交易单 JSON，全程不变
+	DataSign   string            `json:"dataSign"`  // 构建时确定，保证 Data 不被篡改
+	TradeSign  string            `json:"tradeSign"` // 构建时确定，保证 Data 不被篡改
 	Code       string            `json:"code"`
 	Message    string            `json:"message"`
 	SignerList map[string]string `json:"signerList"` // MPC 签名后填充，再提交广播
@@ -121,8 +121,8 @@ type SummaryRawTransaction struct {
 	MinTransfer        string              `json:"minTransfer"`
 	RetainedBalance    string              `json:"retainedBalance"`
 	Account            *AssetsAccount      `json:"account"`
-	AddressStartIndex  int                 `json:"addressStartIndex"`
-	AddressLimit       int                 `json:"addressLimit"`
+	AddressStartIndex  int64               `json:"addressStartIndex"`
+	AddressLimit       int64               `json:"addressLimit"`
 	Confirms           uint64              `json:"confirms"`
 	FeesSupportAccount *FeesSupportAccount `json:"feesSupportAccount"`
 	ExtParam           string              `json:"extParam"`
@@ -149,7 +149,7 @@ type RawTransactionWithError struct {
 //
 //easyjson:json
 type AssetsAccount struct {
-	ID        string   `json:"id"`
+	ID        int64    `json:"id"`
 	WalletID  string   `json:"walletID"`
 	Alias     string   `json:"alias"`
 	AccountID string   `json:"accountID"`
@@ -167,7 +167,7 @@ type AssetsAccount struct {
 //
 //easyjson:json
 type Address struct {
-	ID        string `json:"id"`
+	ID        int64  `json:"id"`
 	AccountID string `json:"accountID"`
 	Address   string `json:"address"`
 	PublicKey string `json:"publicKey"`
