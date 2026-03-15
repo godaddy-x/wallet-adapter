@@ -1,14 +1,14 @@
-// 统一导出：types/wallet/decoder/config/chain/flow/scanner 的类型与函数，便于 import "github.com/blockchain/wallet-adapter" 一站式使用。
-// config 包（Configer、INI 解析）需单独 import "github.com/blockchain/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
+// 统一导出：types/wallet/decoder/config/chain/flow/scanner 的类型与函数，便于 import "github.com/godaddy-x/wallet-adapter" 一站式使用。
+// config 包（Configer、INI 解析）需单独 import "github.com/godaddy-x/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
 package adapter
 
 import (
-	"github.com/blockchain/wallet-adapter/chain"
-	"github.com/blockchain/wallet-adapter/decoder"
-	"github.com/blockchain/wallet-adapter/flow"
-	"github.com/blockchain/wallet-adapter/scanner"
-	"github.com/blockchain/wallet-adapter/types"
-	"github.com/blockchain/wallet-adapter/wallet"
+	"github.com/godaddy-x/wallet-adapter/chain"
+	"github.com/godaddy-x/wallet-adapter/decoder"
+	"github.com/godaddy-x/wallet-adapter/flow"
+	"github.com/godaddy-x/wallet-adapter/scanner"
+	"github.com/godaddy-x/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
 // ----- types 导出 -----

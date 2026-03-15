@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/blockchain/wallet-adapter/decoder"
-	"github.com/blockchain/wallet-adapter/types"
-	"github.com/blockchain/wallet-adapter/wallet"
+	"github.com/godaddy-x/wallet-adapter/decoder"
+	"github.com/godaddy-x/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/wallet"
 	"github.com/mailru/easyjson"
 )
 

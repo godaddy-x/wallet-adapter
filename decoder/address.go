@@ -5,7 +5,7 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/blockchain/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/types"
 )
 
 // AddressDecoder 地址解析器接口。通用方法：PublicKeyToAddress、AddressVerify、AddressDecode、AddressEncode；BTC 系可选 WIF、RedeemScript；可选 CustomCreateAddress。

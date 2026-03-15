@@ -9,7 +9,7 @@
 //   - flow    — 构建与广播流程 BuildTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
 //   - scanner — 区块扫描器 BlockScanner、BlockchainDAI 与 Base
 //
-// 本包对上述子包做统一导出，便于调用方 import "github.com/blockchain/wallet-adapter" 使用。
+// 本包对上述子包做统一导出，便于调用方 import "github.com/godaddy-x/wallet-adapter" 使用。
 //
 // 使用示例：
 //

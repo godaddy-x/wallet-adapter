@@ -4,8 +4,8 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/blockchain/wallet-adapter/types"
-	"github.com/blockchain/wallet-adapter/wallet"
+	"github.com/godaddy-x/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
 // SmartContractDecoder 智能合约解析器接口，供支持合约的链实现（可选）。

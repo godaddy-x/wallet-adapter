@@ -1,7 +1,7 @@
 // Package wallet 钱包数据访问接口（WalletDAI），供 TransactionDecoder 在构建/验证时回调查询，与 types 解耦。
 package wallet
 
-import "github.com/blockchain/wallet-adapter/types"
+import "github.com/godaddy-x/wallet-adapter/types"
 
 // WalletDAI 钱包数据访问接口，供 flow 与 TransactionDecoder 在构建/验证时回调查询。
 // 调用 flow.BuildTransaction / BuildSummaryTransaction / SendTransaction 时 wrapper 不可为 nil（需调用 SignPendingTxData 或校验）；

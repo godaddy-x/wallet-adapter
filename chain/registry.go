@@ -4,14 +4,16 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"strings"
 	"sync"
 
-	"github.com/blockchain/wallet-adapter/decoder"
-	"github.com/blockchain/wallet-adapter/scanner"
+	"github.com/godaddy-x/wallet-adapter/decoder"
+	"github.com/godaddy-x/wallet-adapter/scanner"
+	"golang.org/x/crypto/ripemd160"
 )
 
-// 按 symbol 注册/查询：RegAdapter、GetAdapter、GetTransactionDecoder、GetBlockScanner、GetAddressDecoder、ListSymbols。
+// 按 symbol 注册/查询：RegAdapter、GetAdapter、GetTransactionDecoder、GetBlockScanner、GetAddressDecoder、GetSmartContractDecoder、ListSymbols。
 
 var (
 	adapters   = make(map[string]ChainAdapter)
@@ -109,4 +111,69 @@ func GenContractID(symbol, address string) string {
 	}
 	sum := sha256.Sum256([]byte(fmt.Sprintf("%v_%v", symbol, address)))
 	return base64.StdEncoding.EncodeToString(sum[:])
+}
+
+// KeyIDVer Base58Check 版本字节，用于 ComputeKeyID
+const KeyIDVer = 0x00
+
+// ComputeKeyID 根据 seed 计算 KeyID：SHA256(seed) -> RIPEMD160 -> Base58Check(KeyIDVer)
+func ComputeKeyID(seed []byte) string {
+	// Step 1: SHA256(seed)
+	h := sha256.Sum256(seed)
+	// Step 2: RIPEMD160(SHA256(seed))
+	rh := ripemd160.New()
+	rh.Write(h[:])
+	ripemd160Hash := rh.Sum(nil)
+	// Step 3: Base58Check 编码（带版本字节）
+	return base58CheckEncode(KeyIDVer, ripemd160Hash)
+}
+
+// base58CheckEncode 对 payload 做 Base58Check 编码，version 为 1 字节版本号
+func base58CheckEncode(version byte, payload []byte) string {
+	data := make([]byte, 0, 1+len(payload)+4)
+	data = append(data, version)
+	data = append(data, payload...)
+	checksum := sha256.Sum256(data)
+	checksum = sha256.Sum256(checksum[:])
+	data = append(data, checksum[:4]...)
+	return base58Encode(data)
+}
+
+const base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+func base58Encode(data []byte) string {
+	// Count leading zeros
+	leadingZeros := 0
+	for _, b := range data {
+		if b != 0 {
+			break
+		}
+		leadingZeros++
+	}
+
+	// Convert big-endian bytes to big integer
+	num := new(big.Int).SetBytes(data)
+
+	// Encode in base58
+	var result []byte
+	base := big.NewInt(58)
+	zero := big.NewInt(0)
+	mod := new(big.Int)
+
+	for num.Cmp(zero) > 0 {
+		num.DivMod(num, base, mod)
+		result = append(result, base58Alphabet[mod.Int64()])
+	}
+
+	// Append leading '1's for each leading zero byte
+	for i := 0; i < leadingZeros; i++ {
+		result = append(result, '1')
+	}
+
+	// Reverse
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return string(result)
 }

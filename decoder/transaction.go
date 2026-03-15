@@ -2,8 +2,8 @@
 package decoder
 
 import (
-	"github.com/blockchain/wallet-adapter/types"
-	"github.com/blockchain/wallet-adapter/wallet"
+	"github.com/godaddy-x/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
 // TransactionDecoder 交易单解析器，每条链实现此接口即可接入统一构建与广播流程；签名由外部 MPC 提供。

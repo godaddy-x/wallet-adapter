@@ -1,10 +1,10 @@
-// Package chain 链适配器接口与注册表，提供 ChainAdapter 及按 symbol 的 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder。
+// Package chain 链适配器接口与注册表，提供 ChainAdapter 及按 symbol 的 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder/ListSymbols。
 package chain
 
 import (
-	"github.com/blockchain/wallet-adapter/decoder"
-	"github.com/blockchain/wallet-adapter/scanner"
-	"github.com/blockchain/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/decoder"
+	"github.com/godaddy-x/wallet-adapter/scanner"
+	"github.com/godaddy-x/wallet-adapter/types"
 )
 
 // ChainAdapter 链适配器接口：多主链统一入口，聚合 SymbolInfo、AssetsConfig、TransactionDecoder、BlockScanner、AddressDecoder；可选 SmartContractDecoder。

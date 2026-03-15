@@ -1,4 +1,4 @@
-// Package config 提供链配置的通用接口与 INI 解析，供各子类适配器（如 wallet-adapter-eth）复用。
+// Package config 提供链配置的通用接口与 INI 解析，供各子类适配器（如 github.com/godaddy-x/wallet-adapter-eth）复用。
 package config
 
 import (

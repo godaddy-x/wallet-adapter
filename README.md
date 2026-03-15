@@ -1,6 +1,6 @@
 # wallet-adapter
 
-**github.com/blockchain/wallet-adapter** — 多主链钱包适配器基础库，提供交易单构建、广播与区块扫描等能力。同系列子类库如 **github.com/blockchain/wallet-adapter-eth** 等可依赖本库实现各链适配。
+**github.com/godaddy-x/wallet-adapter** — 多主链钱包适配器基础库，提供交易单构建、广播与区块扫描等能力。同系列子类库如 **github.com/godaddy-x/wallet-adapter-eth** 等可依赖本库实现各链适配。
 
 ## 能力概览
 
@@ -45,8 +45,8 @@ wallet-adapter/
     └── scanner.go            # BlockScanner、BlockchainDAI、Base
 ```
 
-- **推荐**：`import "github.com/blockchain/wallet-adapter"` 后使用 `adapter.BuildTransaction`、`adapter.RawTransaction`、`adapter.RegAdapter` 等。
-- **按需引用子包**：如 `import "github.com/blockchain/wallet-adapter/types"`、`import "github.com/blockchain/wallet-adapter/wallet"`、`import "github.com/blockchain/wallet-adapter/decoder"`、`import "github.com/blockchain/wallet-adapter/config"`、`import "github.com/blockchain/wallet-adapter/chain"` 等。
+- **推荐**：`import "github.com/godaddy-x/wallet-adapter"` 后使用 `adapter.BuildTransaction`、`adapter.RawTransaction`、`adapter.RegAdapter` 等。
+- **按需引用子包**：如 `import "github.com/godaddy-x/wallet-adapter/types"`、`import "github.com/godaddy-x/wallet-adapter/wallet"`、`import "github.com/godaddy-x/wallet-adapter/decoder"`、`import "github.com/godaddy-x/wallet-adapter/config"`、`import "github.com/godaddy-x/wallet-adapter/chain"` 等。
 
 ## 接入新链步骤
 
@@ -78,7 +78,7 @@ wallet-adapter/
 ## 使用示例
 
 ```go
-import "github.com/blockchain/wallet-adapter"
+import "github.com/godaddy-x/wallet-adapter"
 
 // 1. 获取某链的 TransactionDecoder（需已 RegAdapter）
 decoder, err := adapter.GetTransactionDecoder("BTC")
@@ -111,7 +111,7 @@ if err != nil {
 // tx.TxID, tx.Status 等
 ```
 
-本库为 **github.com/blockchain** 下的基础适配器模块，以**币类转账**为主（交易构建/广播、区块扫描、地址解析），并可选扩展**智能合约**（`decoder/contract.go` 的 `SmartContractDecoder`、`types/contract.go` 的合约相关类型）。链实现（如 wallet-adapter-eth）、MPC 签名库等可依赖本库；不包含 HD 钱包、具体链实现等。
+本库为 **github.com/godaddy-x** 下的基础适配器模块，以**币类转账**为主（交易构建/广播、区块扫描、地址解析），并可选扩展**智能合约**（`decoder/contract.go` 的 `SmartContractDecoder`、`types/contract.go` 的合约相关类型）。链实现（如 github.com/godaddy-x/wallet-adapter-eth）、MPC 签名库等可依赖本库；不包含 HD 钱包、具体链实现等。
 
 ## License
 

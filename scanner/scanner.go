@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/blockchain/wallet-adapter/types"
+	"github.com/godaddy-x/wallet-adapter/types"
 )
 
 // BlockScanTargetFunc 根据扫描目标参数（地址/别名等）查询所属源与是否存在，供扫块时过滤交易。
