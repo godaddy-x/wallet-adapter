@@ -3,8 +3,9 @@
 // 子包划分：
 //   - types   — 数据类型与错误码（含 BlockHeader、TxExtractData、Balance 等扫块类型）
 //   - wallet  — 钱包数据访问：Wallet、WalletDAI、WalletDAIBase（供 flow/decoder 回调查询钱包/账户/地址等）
-//   - decoder — 解码器：TransactionDecoder（交易单）、AddressDecoder（地址），各带 Base 基类；签名由外部 MPC 提供
-//   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder
+//   - decoder — 解码器：TransactionDecoder（transaction.go）、AddressDecoder（address.go）、SmartContractDecoder（contract.go，可选），各带 Base 基类；签名由外部 MPC 提供
+//   - config  — 链配置通用接口 Configer、MapConfig 与 INI 解析（KVFromINIFile、KVFromINIContent），供 AssetsConfig.LoadAssetsConfig 复用
+//   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder；AssetsConfig、SmartContractDecoder 可选
 //   - flow    — 构建与广播流程 BuildTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
 //   - scanner — 区块扫描器 BlockScanner、BlockchainDAI 与 Base
 //

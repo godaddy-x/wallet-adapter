@@ -75,6 +75,19 @@ func GetAddressDecoder(symbol string) (decoder.AddressDecoder, error) {
 	return d, nil
 }
 
+// GetSmartContractDecoder 按 symbol 获取该链的 SmartContractDecoder（可选，不支持则返回错误）
+func GetSmartContractDecoder(symbol string) (decoder.SmartContractDecoder, error) {
+	a, err := GetAdapter(symbol)
+	if err != nil {
+		return nil, err
+	}
+	d := a.GetSmartContractDecoder()
+	if d == nil {
+		return nil, fmt.Errorf("chain %s does not support smart contract decoder", symbol)
+	}
+	return d, nil
+}
+
 // ListSymbols 返回已注册的所有 symbol
 func ListSymbols() []string {
 	adaptersMu.RLock()

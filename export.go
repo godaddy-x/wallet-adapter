@@ -1,4 +1,5 @@
-// 统一导出：types/wallet/decoder/chain/flow/scanner 的类型与函数，便于 import "github.com/blockchain/wallet-adapter" 一站式使用。
+// 统一导出：types/wallet/decoder/config/chain/flow/scanner 的类型与函数，便于 import "github.com/blockchain/wallet-adapter" 一站式使用。
+// config 包（Configer、INI 解析）需单独 import "github.com/blockchain/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
 package adapter
 
 import (
@@ -43,6 +44,11 @@ type (
 	BlockchainSyncStatus = types.BlockchainSyncStatus
 	SmartContractReceipt = types.SmartContractReceipt
 	SmartContractEvent   = types.SmartContractEvent
+	// 智能合约解析相关
+	TokenBalance                  = types.TokenBalance
+	SmartContractRawTransaction   = types.SmartContractRawTransaction
+	SmartContractCallResult       = types.SmartContractCallResult
+	ABIInfo                       = types.ABIInfo
 )
 
 const (
@@ -56,6 +62,12 @@ const (
 	ScanTargetTypeContractAlias   = types.ScanTargetTypeContractAlias
 	ScanTargetTypeAddressPubKey   = types.ScanTargetTypeAddressPubKey
 	ScanTargetTypeAddressMemo     = types.ScanTargetTypeAddressMemo
+	// 智能合约 Raw 类型
+	TxRawTypeHex    = types.TxRawTypeHex
+	TxRawTypeJSON   = types.TxRawTypeJSON
+	TxRawTypeBase64 = types.TxRawTypeBase64
+	SmartContractCallResultStatusFail    = types.SmartContractCallResultStatusFail
+	SmartContractCallResultStatusSuccess = types.SmartContractCallResultStatusSuccess
 )
 
 // 错误码
@@ -102,6 +114,9 @@ type TransactionDecoder = decoder.TransactionDecoder
 type TransactionDecoderBase = decoder.TransactionDecoderBase
 type AddressDecoder = decoder.AddressDecoder
 type AddressDecoderBase = decoder.AddressDecoderBase
+type SmartContractDecoder    = decoder.SmartContractDecoder
+type SmartContractDecoderBase = decoder.SmartContractDecoderBase
+type ABIDAI = decoder.ABIDAI
 
 // ----- chain 导出 -----
 type ChainAdapter = chain.ChainAdapter
@@ -116,7 +131,10 @@ func GetTransactionDecoder(symbol string) (TransactionDecoder, error) {
 }
 func GetBlockScanner(symbol string) (BlockScanner, error)     { return chain.GetBlockScanner(symbol) }
 func GetAddressDecoder(symbol string) (AddressDecoder, error) { return chain.GetAddressDecoder(symbol) }
-func ListSymbols() []string                                   { return chain.ListSymbols() }
+func GetSmartContractDecoder(symbol string) (SmartContractDecoder, error) {
+	return chain.GetSmartContractDecoder(symbol)
+}
+func ListSymbols() []string { return chain.ListSymbols() }
 
 // ----- scanner 导出 -----
 type BlockScanner = scanner.BlockScanner
