@@ -71,7 +71,7 @@ type RawTransaction struct {
 //
 //easyjson:json
 type KeySignature struct {
-	EccType   uint32   `json:"eccType"`
+	EccType   uint32   `json:"eccType"` // 1.ecdsa 2.ed25519
 	Nonce     string   `json:"nonce"`
 	Address   *Address `json:"address"`
 	Signature string   `json:"signed"`
