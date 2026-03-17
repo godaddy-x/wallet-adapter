@@ -55,7 +55,7 @@ type RawTransaction struct {
 	IsCompleted bool                       `json:"isComplete"`
 	IsSubmit    bool                       `json:"isSubmit"`
 	Change      *Address                   `json:"change"`
-	ExtParam    string                     `json:"extParam"`
+	ExtParam    map[string]string          `json:"extParam,omitempty"`
 
 	Sid         string   `json:"sid"`
 	CreateTime  int64    `json:"createTime"`
@@ -102,7 +102,8 @@ type Transaction struct {
 	ConfirmTime int64    `json:"confirmTime"`
 	Status      string   `json:"status"`
 	Reason      string   `json:"reason"`
-	ExtParam    string   `json:"extParam"`
+	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation/logIndex 等）。
+	ExtParam map[string]string `json:"extParam,omitempty"`
 }
 
 const (

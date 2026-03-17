@@ -158,6 +158,91 @@ type BlockchainSyncStatus struct {
 	Syncing            bool
 }
 
+// BlockScanResult 单次按高度扫块的结果摘要（供外部系统维护游标、重试与告警）。
+// 设计目标：扫块器不依赖内部存储（BlockchainDAI 可选），外部系统可依据该结果决定是否推进高度或重扫。
+// 注意：不同链实现可按能力填充 TxTotal/TxFailed 等字段；最低要求是 Height + Success + ErrorReason。
+//easyjson:json
+type BlockScanResult struct {
+	Symbol       string `json:"symbol"`
+	Height       uint64 `json:"height"`
+	BlockHash    string `json:"blockHash"`
+	Success      bool   `json:"success"`
+	ErrorReason  string `json:"errorReason"`
+	TxTotal      uint64 `json:"txTotal"`
+	TxFailed     uint64 `json:"txFailed"`
+	ExtractedTxs uint64 `json:"extractedTxs"`
+	// FailedTxIDs 记录部分失败交易 ID（截断），用于快速定位问题；完整失败明细由外部系统自行落库。
+	FailedTxIDs []string `json:"failedTxIDs"`
+
+	// Header 为本次扫描对应的区块头（若能成功获取区块）。
+	Header *BlockHeader `json:"header"`
+	// ExtractData 为交易提取结果，按 SourceKey 聚合（仅当实现方开启交易提取时填充）。
+	ExtractData map[string][]*TxExtractData `json:"extractData"`
+	// ContractReceipts 为合约回执集合（实现方可自定义 key，如 contractAddr:logIndex）。
+	ContractReceipts map[string]*SmartContractReceipt `json:"contractReceipts"`
+}
+
+// TxVerifyResult 按 txid 复核链上交易并返回“可入账结果集”的输出。
+// 设计目标：外部系统在入账前进行二次链上复核（上链归属、成功状态、确认数），并获取与扫块口径一致的提取结果集。
+//easyjson:json
+type TxVerifyResult struct {
+	Symbol        string `json:"symbol"`
+	TxID          string `json:"txid"`
+	Verified      bool   `json:"verified"`
+	Reason        string `json:"reason"`
+
+	BlockHeight   uint64 `json:"blockHeight"`
+	BlockHash     string `json:"blockHash"`
+	Confirmations uint64 `json:"confirmations"`
+	Status        string `json:"status"`
+
+	// ExtractData 为交易提取结果，按 SourceKey 聚合。
+	ExtractData map[string][]*TxExtractData `json:"extractData"`
+	// ContractReceipts 为合约回执集合（实现方可自定义 key，如 txid:contractAddr:logIndex）。
+	ContractReceipts map[string]*SmartContractReceipt `json:"contractReceipts"`
+}
+
+// TxTransferExpected 主币/代币单条转账的期望值（用于入账前严格比对）。
+//easyjson:json
+type TxTransferExpected struct {
+	// ContractAddr 为空表示主币转账；非空表示合约代币（ERC20）转账。
+	ContractAddr string `json:"contractAddr"`
+	From         string `json:"from"`
+	To           string `json:"to"`
+	// Amount 为十进制字符串（已按 decimals 格式化后的金额），例如 "1.23"。
+	Amount string `json:"amount"`
+	// Decimals 仅在 ContractAddr 非空时使用；若为 0 表示由实现方自行确定（不推荐，建议外部明确）。
+	Decimals uint32 `json:"decimals"`
+	// LogIndex 可选：用于唯一定位同一 tx 内的多笔 Transfer 事件；<0 表示不使用。
+	LogIndex int64 `json:"logIndex"`
+}
+
+// TxVerifyExpected 入账前复核所需的期望对象（外部系统准备入账的记录摘要）。
+//easyjson:json
+type TxVerifyExpected struct {
+	Symbol    string `json:"symbol"`
+	TxID      string `json:"txid"`
+	BlockHash string `json:"blockHash"`
+	Height    uint64 `json:"height"`
+
+	// Transfers 为期望入账的转账列表（主币与代币均可）。
+	Transfers []*TxTransferExpected `json:"transfers"`
+}
+
+// TxVerifyMatchResult VerifyTransactionMatch 的返回值：链上复核 + 与期望值比对的结论。
+//easyjson:json
+type TxVerifyMatchResult struct {
+	TxID     string `json:"txid"`
+	Verified bool   `json:"verified"`
+	Reason   string `json:"reason"`
+
+	// Mismatches 用于返回不一致的原因列表（可直接写日志/告警）。
+	Mismatches []string `json:"mismatches"`
+
+	// Chain 为链上复核与实际提取结果（便于外部定位差异）。
+	Chain *TxVerifyResult `json:"chain"`
+}
+
 // SmartContractEvent 合约事件
 //easyjson:json
 type SmartContractEvent struct {
@@ -183,5 +268,6 @@ type SmartContractReceipt struct {
 	ConfirmTime int64                 `json:"confirmTime"`
 	Status      string                `json:"status"`
 	Reason      string                `json:"reason"`
-	ExtParam    string                `json:"extParam"`
+	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 logIndex、contract_creation 等）。
+	ExtParam map[string]string `json:"extParam,omitempty"`
 }

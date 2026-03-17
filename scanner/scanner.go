@@ -12,6 +12,9 @@ import (
 // BlockScanTargetFunc 根据扫描目标参数（地址/别名等）查询所属源与是否存在，供扫块时过滤交易。
 type BlockScanTargetFunc func(target types.ScanTargetParam) types.ScanTargetResult
 
+// TokenMetadataFunc 根据链标识与合约地址查询代币/合约元数据（SmartContract），供扫块器在提取交易/回执时补充合约信息。
+type TokenMetadataFunc func(symbol, contractAddr string) *types.SmartContract
+
 // BlockScanNotificationObject 扫描通知观察者：新区块、交易提取结果、合约回执。
 type BlockScanNotificationObject interface {
 	BlockScanNotify(header *types.BlockHeader) error
@@ -22,6 +25,8 @@ type BlockScanNotificationObject interface {
 // BlockScanner 区块扫描器接口：设置扫描目标、观察者、扫块任务，执行 ScanBlock/GetCurrentBlockHeader，提取交易与余额。
 type BlockScanner interface {
 	SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
+
+	SetTokenMetadataFunc(tokenMetadataFunc TokenMetadataFunc) error
 
 	AddObserver(obj BlockScanNotificationObject) error
 	RemoveObserver(obj BlockScanNotificationObject) error
@@ -36,6 +41,9 @@ type BlockScanner interface {
 	CloseBlockScanner() error
 
 	ScanBlock(height uint64) error
+	// ScanBlockWithResult 按高度扫描区块并返回摘要结果，供外部系统推进游标与重试。
+	// 约定：error 用于表达“无法完成该高度扫描”（如 RPC 失败/块不存在等）；result.Success 表达业务语义上的成功与否。
+	ScanBlockWithResult(height uint64) (*types.BlockScanResult, error)
 	NewBlockNotify(header *types.BlockHeader) error
 
 	GetCurrentBlockHeader() (*types.BlockHeader, error)
@@ -44,6 +52,14 @@ type BlockScanner interface {
 
 	ExtractTransactionData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, error)
 	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error)
+
+	// VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集。
+	// 约定：error 用于表达“RPC/系统错误导致无法完成复核”；业务层面的不通过以 result.Verified=false + Reason 表达。
+	VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
+
+	// VerifyTransactionMatch 入账前对链上结果集做二次复核，并与外部期望对象 expected 严格比对。
+	// 约定：error 表达系统/RPC 异常；业务不通过以 result.Verified=false + Reason/Mismatches 表达。
+	VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
 	GetBalanceByAddress(address ...string) ([]*types.Balance, error)
 	GetTransactionsByAddress(offset, limit int, coin types.Coin, address ...string) ([]*types.TxExtractData, error)
@@ -126,11 +142,12 @@ const (
 
 // Base 区块扫描器基类：观察者、ScanTargetFunc、定时任务、BlockchainDAI、NewBlockNotify 转发；Run/Stop/Pause/Restart；具体链需实现 ScanBlock、GetCurrentBlockHeader、Extract*、GetBalanceByAddress 等。
 type Base struct {
-	Mu             sync.RWMutex
-	Observers      map[BlockScanNotificationObject]bool
-	ScanTargetFunc BlockScanTargetFunc
-	PeriodOfTask   time.Duration
-	BlockchainDAI  BlockchainDAI
+	Mu                sync.RWMutex
+	Observers         map[BlockScanNotificationObject]bool
+	ScanTargetFunc    BlockScanTargetFunc
+	TokenMetadataFunc TokenMetadataFunc
+	PeriodOfTask      time.Duration
+	BlockchainDAI     BlockchainDAI
 
 	blockProducer chan interface{}
 	blockConsumer chan interface{}
@@ -222,6 +239,11 @@ func (bs *Base) SetBlockScanTargetFunc(f BlockScanTargetFunc) error {
 	return nil
 }
 
+func (bs *Base) SetTokenMetadataFunc(f TokenMetadataFunc) error {
+	bs.TokenMetadataFunc = f
+	return nil
+}
+
 func (bs *Base) AddObserver(obj BlockScanNotificationObject) error {
 	if obj == nil {
 		return nil
@@ -305,6 +327,10 @@ func (bs *Base) ScanBlock(height uint64) error {
 	return fmt.Errorf("ScanBlock not implement")
 }
 
+func (bs *Base) ScanBlockWithResult(height uint64) (*types.BlockScanResult, error) {
+	return nil, fmt.Errorf("ScanBlockWithResult not implement")
+}
+
 func (bs *Base) GetCurrentBlockHeader() (*types.BlockHeader, error) {
 	return nil, fmt.Errorf("GetCurrentBlockHeader not implement")
 }
@@ -319,6 +345,14 @@ func (bs *Base) ExtractTransactionData(txid string, scanTargetFunc BlockScanTarg
 
 func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error) {
 	return nil, nil, fmt.Errorf("ExtractTransactionAndReceiptData not implement")
+}
+
+func (bs *Base) VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error) {
+	return nil, fmt.Errorf("VerifyTransactionByTxID not implement")
+}
+
+func (bs *Base) VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error) {
+	return nil, fmt.Errorf("VerifyTransactionMatch not implement")
 }
 
 func (bs *Base) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {

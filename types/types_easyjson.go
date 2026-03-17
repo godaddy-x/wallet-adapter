@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes(in *jlexer.Lexer, out *Transaction) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes(in *jlexer.Lexer, out *Transaction) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -191,7 +191,25 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes(in *jlexer.Lexe
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.ExtParam = string(in.String())
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.ExtParam = make(map[string]string)
+				} else {
+					out.ExtParam = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v3 string
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						v3 = string(in.String())
+					}
+					(out.ExtParam)[key] = v3
+					in.WantComma()
+				}
+				in.Delim('}')
 			}
 		default:
 			in.SkipRecursive()
@@ -203,7 +221,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes(in *jlexer.Lexe
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(out *jwriter.Writer, in Transaction) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes(out *jwriter.Writer, in Transaction) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -239,11 +257,11 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(out *jwriter.Wr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v3, v4 := range in.From {
-				if v3 > 0 {
+			for v4, v5 := range in.From {
+				if v4 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v4))
+				out.String(string(v5))
 			}
 			out.RawByte(']')
 		}
@@ -255,11 +273,11 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(out *jwriter.Wr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v5, v6 := range in.To {
-				if v5 > 0 {
+			for v6, v7 := range in.To {
+				if v6 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v7))
 			}
 			out.RawByte(']')
 		}
@@ -324,10 +342,24 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(out *jwriter.Wr
 		out.RawString(prefix)
 		out.String(string(in.Reason))
 	}
-	{
+	if len(in.ExtParam) != 0 {
 		const prefix string = ",\"extParam\":"
 		out.RawString(prefix)
-		out.String(string(in.ExtParam))
+		{
+			out.RawByte('{')
+			v8First := true
+			for v8Name, v8Value := range in.ExtParam {
+				if v8First {
+					v8First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v8Name))
+				out.RawByte(':')
+				out.String(string(v8Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	out.RawByte('}')
 }
@@ -335,27 +367,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(out *jwriter.Wr
 // MarshalJSON supports json.Marshaler interface
 func (v Transaction) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Transaction) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Transaction) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Transaction) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes1(in *jlexer.Lexer, out *SummaryRawTransaction) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes1(in *jlexer.Lexer, out *SummaryRawTransaction) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -467,7 +499,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes1(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes1(out *jwriter.Writer, in SummaryRawTransaction) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes1(out *jwriter.Writer, in SummaryRawTransaction) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -545,27 +577,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes1(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v SummaryRawTransaction) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes1(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v SummaryRawTransaction) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes1(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *SummaryRawTransaction) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes1(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *SummaryRawTransaction) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes1(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes1(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes2(in *jlexer.Lexer, out *SmartContract) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes2(in *jlexer.Lexer, out *SmartContract) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -631,7 +663,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes2(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes2(out *jwriter.Writer, in SmartContract) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes2(out *jwriter.Writer, in SmartContract) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -676,27 +708,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes2(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v SmartContract) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes2(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v SmartContract) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes2(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *SmartContract) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes2(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *SmartContract) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes2(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes2(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes3(in *jlexer.Lexer, out *RawTransactionWithError) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes3(in *jlexer.Lexer, out *RawTransactionWithError) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -750,7 +782,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes3(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes3(out *jwriter.Writer, in RawTransactionWithError) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes3(out *jwriter.Writer, in RawTransactionWithError) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -778,27 +810,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes3(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v RawTransactionWithError) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes3(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes3(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v RawTransactionWithError) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes3(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes3(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *RawTransactionWithError) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes3(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes3(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *RawTransactionWithError) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes3(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes3(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lexer, out *RawTransaction) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes4(in *jlexer.Lexer, out *RawTransaction) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -845,13 +877,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v7 string
+					var v9 string
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						v7 = string(in.String())
+						v9 = string(in.String())
 					}
-					(out.To)[key] = v7
+					(out.To)[key] = v9
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -879,42 +911,42 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v8 []*KeySignature
+					var v10 []*KeySignature
 					if in.IsNull() {
 						in.Skip()
-						v8 = nil
+						v10 = nil
 					} else {
 						in.Delim('[')
-						if v8 == nil {
+						if v10 == nil {
 							if !in.IsDelim(']') {
-								v8 = make([]*KeySignature, 0, 8)
+								v10 = make([]*KeySignature, 0, 8)
 							} else {
-								v8 = []*KeySignature{}
+								v10 = []*KeySignature{}
 							}
 						} else {
-							v8 = (v8)[:0]
+							v10 = (v10)[:0]
 						}
 						for !in.IsDelim(']') {
-							var v9 *KeySignature
+							var v11 *KeySignature
 							if in.IsNull() {
 								in.Skip()
-								v9 = nil
+								v11 = nil
 							} else {
-								if v9 == nil {
-									v9 = new(KeySignature)
+								if v11 == nil {
+									v11 = new(KeySignature)
 								}
 								if in.IsNull() {
 									in.Skip()
 								} else {
-									(*v9).UnmarshalEasyJSON(in)
+									(*v11).UnmarshalEasyJSON(in)
 								}
 							}
-							v8 = append(v8, v9)
+							v10 = append(v10, v11)
 							in.WantComma()
 						}
 						in.Delim(']')
 					}
-					(out.Signatures)[key] = v8
+					(out.Signatures)[key] = v10
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -961,7 +993,25 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.ExtParam = string(in.String())
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.ExtParam = make(map[string]string)
+				} else {
+					out.ExtParam = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v12 string
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						v12 = string(in.String())
+					}
+					(out.ExtParam)[key] = v12
+					in.WantComma()
+				}
+				in.Delim('}')
 			}
 		case "sid":
 			if in.IsNull() {
@@ -1015,13 +1065,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 					out.TxFrom = (out.TxFrom)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v10 string
+					var v13 string
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						v10 = string(in.String())
+						v13 = string(in.String())
 					}
-					out.TxFrom = append(out.TxFrom, v10)
+					out.TxFrom = append(out.TxFrom, v13)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1042,13 +1092,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 					out.TxTo = (out.TxTo)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v11 string
+					var v14 string
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						v11 = string(in.String())
+						v14 = string(in.String())
 					}
-					out.TxTo = append(out.TxTo, v11)
+					out.TxTo = append(out.TxTo, v14)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1063,7 +1113,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.Writer, in RawTransaction) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes4(out *jwriter.Writer, in RawTransaction) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1094,16 +1144,16 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v12First := true
-			for v12Name, v12Value := range in.To {
-				if v12First {
-					v12First = false
+			v15First := true
+			for v15Name, v15Value := range in.To {
+				if v15First {
+					v15First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v12Name))
+				out.String(string(v15Name))
 				out.RawByte(':')
-				out.String(string(v12Value))
+				out.String(string(v15Value))
 			}
 			out.RawByte('}')
 		}
@@ -1124,27 +1174,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v13First := true
-			for v13Name, v13Value := range in.Signatures {
-				if v13First {
-					v13First = false
+			v16First := true
+			for v16Name, v16Value := range in.Signatures {
+				if v16First {
+					v16First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v13Name))
+				out.String(string(v16Name))
 				out.RawByte(':')
-				if v13Value == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v16Value == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v14, v15 := range v13Value {
-						if v14 > 0 {
+					for v17, v18 := range v16Value {
+						if v17 > 0 {
 							out.RawByte(',')
 						}
-						if v15 == nil {
+						if v18 == nil {
 							out.RawString("null")
 						} else {
-							(*v15).MarshalEasyJSON(out)
+							(*v18).MarshalEasyJSON(out)
 						}
 					}
 					out.RawByte(']')
@@ -1182,10 +1232,24 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 			(*in.Change).MarshalEasyJSON(out)
 		}
 	}
-	{
+	if len(in.ExtParam) != 0 {
 		const prefix string = ",\"extParam\":"
 		out.RawString(prefix)
-		out.String(string(in.ExtParam))
+		{
+			out.RawByte('{')
+			v19First := true
+			for v19Name, v19Value := range in.ExtParam {
+				if v19First {
+					v19First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v19Name))
+				out.RawByte(':')
+				out.String(string(v19Value))
+			}
+			out.RawByte('}')
+		}
 	}
 	{
 		const prefix string = ",\"sid\":"
@@ -1224,11 +1288,11 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v16, v17 := range in.TxFrom {
-				if v16 > 0 {
+			for v20, v21 := range in.TxFrom {
+				if v20 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v17))
+				out.String(string(v21))
 			}
 			out.RawByte(']')
 		}
@@ -1240,11 +1304,11 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v18, v19 := range in.TxTo {
-				if v18 > 0 {
+			for v22, v23 := range in.TxTo {
+				if v22 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v19))
+				out.String(string(v23))
 			}
 			out.RawByte(']')
 		}
@@ -1255,27 +1319,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v RawTransaction) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes4(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v RawTransaction) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes4(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes4(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *RawTransaction) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes4(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *RawTransaction) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes4(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes4(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes5(in *jlexer.Lexer, out *PendingSignTx) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes5(in *jlexer.Lexer, out *PendingSignTx) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1334,13 +1398,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes5(in *jlexer.Lex
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v20 string
+					var v24 string
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						v20 = string(in.String())
+						v24 = string(in.String())
 					}
-					(out.SignerList)[key] = v20
+					(out.SignerList)[key] = v24
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -1355,7 +1419,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes5(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes5(out *jwriter.Writer, in PendingSignTx) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes5(out *jwriter.Writer, in PendingSignTx) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1396,16 +1460,16 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes5(out *jwriter.W
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v21First := true
-			for v21Name, v21Value := range in.SignerList {
-				if v21First {
-					v21First = false
+			v25First := true
+			for v25Name, v25Value := range in.SignerList {
+				if v25First {
+					v25First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v21Name))
+				out.String(string(v25Name))
 				out.RawByte(':')
-				out.String(string(v21Value))
+				out.String(string(v25Value))
 			}
 			out.RawByte('}')
 		}
@@ -1416,27 +1480,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes5(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v PendingSignTx) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes5(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes5(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PendingSignTx) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes5(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes5(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PendingSignTx) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes5(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes5(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PendingSignTx) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes5(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes5(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes6(in *jlexer.Lexer, out *KeySignature) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes6(in *jlexer.Lexer, out *KeySignature) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1504,7 +1568,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes6(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes6(out *jwriter.Writer, in KeySignature) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes6(out *jwriter.Writer, in KeySignature) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1548,27 +1612,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes6(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v KeySignature) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes6(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes6(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v KeySignature) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes6(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes6(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *KeySignature) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes6(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes6(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *KeySignature) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes6(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes6(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes7(in *jlexer.Lexer, out *FeesSupportAccount) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes7(in *jlexer.Lexer, out *FeesSupportAccount) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1610,7 +1674,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes7(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes7(out *jwriter.Writer, in FeesSupportAccount) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes7(out *jwriter.Writer, in FeesSupportAccount) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1635,27 +1699,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes7(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v FeesSupportAccount) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes7(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes7(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v FeesSupportAccount) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes7(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes7(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *FeesSupportAccount) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes7(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes7(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *FeesSupportAccount) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes7(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes7(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes8(in *jlexer.Lexer, out *Coin) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes8(in *jlexer.Lexer, out *Coin) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1703,7 +1767,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes8(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes8(out *jwriter.Writer, in Coin) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes8(out *jwriter.Writer, in Coin) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1733,27 +1797,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes8(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v Coin) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes8(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes8(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Coin) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes8(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes8(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Coin) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes8(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes8(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Coin) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes8(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes8(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(in *jlexer.Lexer, out *AssetsAccount) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes9(in *jlexer.Lexer, out *AssetsAccount) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1825,13 +1889,13 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(in *jlexer.Lex
 					out.OwnerKeys = (out.OwnerKeys)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v22 string
+					var v26 string
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						v22 = string(in.String())
+						v26 = string(in.String())
 					}
-					out.OwnerKeys = append(out.OwnerKeys, v22)
+					out.OwnerKeys = append(out.OwnerKeys, v26)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1870,7 +1934,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(out *jwriter.Writer, in AssetsAccount) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes9(out *jwriter.Writer, in AssetsAccount) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1916,11 +1980,11 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(out *jwriter.W
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v23, v24 := range in.OwnerKeys {
-				if v23 > 0 {
+			for v27, v28 := range in.OwnerKeys {
+				if v27 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v24))
+				out.String(string(v28))
 			}
 			out.RawByte(']')
 		}
@@ -1951,27 +2015,27 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v AssetsAccount) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes9(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AssetsAccount) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes9(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes9(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AssetsAccount) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes9(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AssetsAccount) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes9(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes9(l, v)
 }
-func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes10(in *jlexer.Lexer, out *Address) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(in *jlexer.Lexer, out *Address) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2049,7 +2113,7 @@ func easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes10(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes10(out *jwriter.Writer, in Address) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(out *jwriter.Writer, in Address) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2104,23 +2168,23 @@ func easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes10(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v Address) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes10(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Address) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComBlockchainWalletAdapterTypes10(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Address) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes10(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Address) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComBlockchainWalletAdapterTypes10(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(l, v)
 }
