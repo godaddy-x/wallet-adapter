@@ -55,7 +55,7 @@ type RawTransaction struct {
 	IsCompleted bool                       `json:"isComplete"`
 	IsSubmit    bool                       `json:"isSubmit"`
 	Change      *Address                   `json:"change"`
-	ExtParam    map[string]string          `json:"extParam,omitempty"`
+	ExtParam    map[string]string          `json:"extParam"`
 
 	Sid         string   `json:"sid"`
 	CreateTime  int64    `json:"createTime"`
@@ -102,8 +102,15 @@ type Transaction struct {
 	ConfirmTime int64    `json:"confirmTime"`
 	Status      string   `json:"status"`
 	Reason      string   `json:"reason"`
-	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation/logIndex 等）。
-	ExtParam map[string]string `json:"extParam,omitempty"`
+	// LogIndex 表示该 Transaction 对应的链上事件序号（用于区分同一 tx 内多笔事件）。
+	// 仅在合约事件（如 ERC20 Transfer）场景下有意义；普通主币转账可保持默认 0（由业务自行忽略）。
+	LogIndex int64 `json:"logIndex"`
+
+	// FeeType 用于标识该记录是否为手续费类记录（如 "gas"）。
+	// 空值表示该记录为普通转账类记录。
+	FeeType string `json:"feeType"`
+	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation 等）。
+	ExtParam map[string]string `json:"extParam"`
 }
 
 const (

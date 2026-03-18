@@ -1309,16 +1309,18 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes8(in *jlexer.Lexer
 			} else {
 				out.Reason = string(in.String())
 			}
+		case "logIndex":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LogIndex = int64(in.Int64())
+			}
 		case "extParam":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				in.Delim('{')
-				if !in.IsDelim('}') {
-					out.ExtParam = make(map[string]string)
-				} else {
-					out.ExtParam = nil
-				}
+				out.ExtParam = make(map[string]string)
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -1432,10 +1434,17 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes8(out *jwriter.Wri
 		out.RawString(prefix)
 		out.String(string(in.Reason))
 	}
-	if len(in.ExtParam) != 0 {
+	{
+		const prefix string = ",\"logIndex\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.LogIndex))
+	}
+	{
 		const prefix string = ",\"extParam\":"
 		out.RawString(prefix)
-		{
+		if in.ExtParam == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
 			out.RawByte('{')
 			v24First := true
 			for v24Name, v24Value := range in.ExtParam {
@@ -2183,6 +2192,12 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes15(in *jlexer.Lexe
 			} else {
 				out.BlockHash = string(in.String())
 			}
+		case "networkBlockHeight":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.NetworkBlockHeight = uint64(in.Uint64())
+			}
 		case "success":
 			if in.IsNull() {
 				in.Skip()
@@ -2359,6 +2374,11 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes15(out *jwriter.Wr
 		const prefix string = ",\"blockHash\":"
 		out.RawString(prefix)
 		out.String(string(in.BlockHash))
+	}
+	{
+		const prefix string = ",\"networkBlockHeight\":"
+		out.RawString(prefix)
+		out.Uint64(uint64(in.NetworkBlockHeight))
 	}
 	{
 		const prefix string = ",\"success\":"

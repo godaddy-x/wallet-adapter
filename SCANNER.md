@@ -45,51 +45,36 @@
 
 ---
 
-## 2. BlockScanner 接口
+## 2. BlockScanner 核心接口（已精简）
 
 ```go
 type BlockScanner interface {
     // 扫描目标：根据地址/别名/公钥等筛选业务关心的交易
     SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
 
-    // 观察者：订阅新区块、交易结果、合约回执
-    AddObserver(obj BlockScanNotificationObject) error
-    RemoveObserver(obj BlockScanNotificationObject) error
+    // 合约元数据：用于补全 token decimals 等信息（建议外部注入，避免扫块器自行猜测默认值）
+    SetTokenMetadataFunc(tokenMetadataFunc TokenMetadataFunc) error
 
-    // 任务控制
-    SetRescanBlockHeight(height uint64) error
-    Run() error
-    Stop() error
-    Pause() error
-    Restart() error
-
-    // 生命周期
-    InitBlockScanner() error
-    CloseBlockScanner() error
-
-    // 扫块与区块通知
+    // 扫块（兼容旧异步通知模式：实现方可内部向观察者推送）
     ScanBlock(height uint64) error
-    NewBlockNotify(header *types.BlockHeader) error
+    // ScanBlockWithResult 按高度扫描区块并返回摘要结果，供外部系统推进游标与重试。
+    ScanBlockWithResult(height uint64) (*types.BlockScanResult, error)
 
     // 状态查询
     GetCurrentBlockHeader() (*types.BlockHeader, error)
     GetGlobalMaxBlockHeight() uint64
-    GetScannedBlockHeight() uint64
 
     // 交易 / 回执提取
-    ExtractTransactionData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, error)
     ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error)
 
-    // 余额与地址交易查询
-    GetBalanceByAddress(address ...string) ([]*types.Balance, error)
-    GetTransactionsByAddress(offset, limit int, coin types.Coin, address ...string) ([]*types.TxExtractData, error)
+    // VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集。
+    VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
 
-    // 区块链数据访问接口（可选）
-    SetBlockchainDAI(dai BlockchainDAI) error
-    SupportBlockchainDAI() bool
+    // VerifyTransactionMatch 入账前对链上结果集做二次复核，并与外部期望对象 expected 严格比对。
+    VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
-    // 同步状态
-    GetBlockchainSyncStatus() (*types.BlockchainSyncStatus, error)
+    // RunScanLoop 外部维护游标的持续扫块循环（回调每个高度的扫描结果）。
+    RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error
 }
 ```
 

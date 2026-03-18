@@ -187,16 +187,24 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes(in *jlexer.Lexer,
 			} else {
 				out.Reason = string(in.String())
 			}
+		case "logIndex":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LogIndex = int64(in.Int64())
+			}
+		case "feeType":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.FeeType = string(in.String())
+			}
 		case "extParam":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				in.Delim('{')
-				if !in.IsDelim('}') {
-					out.ExtParam = make(map[string]string)
-				} else {
-					out.ExtParam = nil
-				}
+				out.ExtParam = make(map[string]string)
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -342,10 +350,22 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes(out *jwriter.Writ
 		out.RawString(prefix)
 		out.String(string(in.Reason))
 	}
-	if len(in.ExtParam) != 0 {
+	{
+		const prefix string = ",\"logIndex\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.LogIndex))
+	}
+	{
+		const prefix string = ",\"feeType\":"
+		out.RawString(prefix)
+		out.String(string(in.FeeType))
+	}
+	{
 		const prefix string = ",\"extParam\":"
 		out.RawString(prefix)
-		{
+		if in.ExtParam == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
 			out.RawByte('{')
 			v8First := true
 			for v8Name, v8Value := range in.ExtParam {
@@ -994,11 +1014,7 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes4(in *jlexer.Lexer
 				in.Skip()
 			} else {
 				in.Delim('{')
-				if !in.IsDelim('}') {
-					out.ExtParam = make(map[string]string)
-				} else {
-					out.ExtParam = nil
-				}
+				out.ExtParam = make(map[string]string)
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -1232,10 +1248,12 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes4(out *jwriter.Wri
 			(*in.Change).MarshalEasyJSON(out)
 		}
 	}
-	if len(in.ExtParam) != 0 {
+	{
 		const prefix string = ",\"extParam\":"
 		out.RawString(prefix)
-		{
+		if in.ExtParam == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+			out.RawString(`null`)
+		} else {
 			out.RawByte('{')
 			v19First := true
 			for v19Name, v19Value := range in.ExtParam {

@@ -139,9 +139,6 @@ func ListSymbols() []string { return chain.ListSymbols() }
 // ----- scanner 导出 -----
 type BlockScanner = scanner.BlockScanner
 type BlockScannerBase = scanner.Base
-type BlockScanNotificationObject = scanner.BlockScanNotificationObject
-type BlockchainDAI = scanner.BlockchainDAI
-type BlockchainDAIBase = scanner.BlockchainDAIBase
 type BlockScanTargetFunc = scanner.BlockScanTargetFunc
 
 var NewBlockScannerBase = scanner.NewBlockScannerBase
