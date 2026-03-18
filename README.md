@@ -41,8 +41,9 @@ wallet-adapter/
 │   └── registry.go           # RegAdapter、GetAdapter、GetTransactionDecoder 等
 ├── flow/                     # 构建与广播流程（入口：BuildTransaction/BuildSummaryTransaction/SendTransaction）
 │   └── flow.go               # 调 decoder 构建 rawTx，再调 wrapper.SignPendingTxData 得 PendingSignTx；广播前校验 DataSign/TradeSign
-└── scanner/                  # 区块扫描器
-    └── scanner.go            # BlockScanner、BlockchainDAI、Base
+├── scanner/                  # 区块扫描器
+│   ├── scanner.go            # BlockScanner 接口与 Base（按高度扫块、持续循环、补扫单高度）
+│   └── SCANNER.md            # 扫块器详细设计文档
 ```
 
 - **推荐**：`import "github.com/godaddy-x/wallet-adapter"` 后使用 `adapter.BuildTransaction`、`adapter.RawTransaction`、`adapter.RegAdapter` 等。
@@ -66,8 +67,8 @@ wallet-adapter/
    - 在 `init()` 或启动时：`adapter.RegAdapter("SYMBOL", yourAdapter)`
 
 4. **（可选）实现 `BlockScanner`**
-   - 嵌入 `scanner.Base`，实现 `ScanBlock`、`GetCurrentBlockHeader`、`ExtractTransactionAndReceiptData`、`GetBalanceByAddress` 等。
-   - 通过 `SetBlockScanTargetFunc` 设置扫描目标查询，`SetTask` 设置定时扫块任务，`Run`/`Stop` 启停；`NewBlockNotify` 推送新区块给观察者。
+   - 嵌入 `scanner.Base`，实现 `ScanBlockWithResult`（按高度扫块并返回结果）、`ScanBlockOnce`（单高度补扫）、`RunScanLoop`（持续扫块循环）、`ResetScanHeight`（重置游标）等。
+   - 通过 `SetBlockScanTargetFunc` 设置扫描目标查询，`SetTokenMetadataFunc` 注入合约元数据查询，供扫块时补充合约信息。
 
 5. **（可选）实现 `AddressDecoder`**
    - 嵌入 `decoder.AddressDecoderBase`，按需实现：`PublicKeyToAddress`、`AddressVerify`、`AddressDecode`、`AddressEncode`、WIF、多签、`CustomCreateAddress` 等；未实现的方法由 Base 返回“未实现”。
