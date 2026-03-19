@@ -64,6 +64,16 @@ type BlockScanner interface {
 	// - 每轮结束后 sleep interval 再次循环。
 	// 该方法只负责生产候选结果，入账/确认/重试策略由外部系统基于回调结果与 Verify 接口自行决定。
 	RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error
+
+	// ScanBlockPrioritize 插队扫描指定高度列表。
+	// 说明：
+	// - 将插队高度加入优先队列，RunScanLoop 会在主线扫描间隙优先处理这些高度；
+	// - 插队高度的扫描结果复用 RunScanLoop 的 handleBlock（如果 RunScanLoop 未运行则无回调）；
+	// - 插队扫描不影响 RunScanLoop 的主线 cursor 推进逻辑；
+	// - 插队高度按升序处理，且去重；
+	// - 严格要求所有传入的高度都满足 confirmations 要求（height <= latest - confirmations），否则直接返回错误；
+	// - 调用方可根据错误信息调整高度后重试。
+	ScanBlockPrioritize(heights []uint64) error
 }
 
 const defaultPeriodOfTask = 5 * time.Second
@@ -285,4 +295,10 @@ func (bs *Base) VerifyTransactionMatch(txid string, expected *types.TxVerifyExpe
 
 func (bs *Base) RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error {
 	return fmt.Errorf("RunScanLoop not implement")
+}
+
+// ScanBlockPrioritize 默认返回未实现错误，各链扫描器应重写此方法。
+// 实现参考：在 RunScanLoop 运行时，将插队高度加入优先队列，由 RunScanLoop 在主线间隙处理。
+func (bs *Base) ScanBlockPrioritize(heights []uint64) error {
+	return fmt.Errorf("ScanBlockPrioritize not implement")
 }

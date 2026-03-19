@@ -2519,6 +2519,12 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes17(in *jlexer.Lexe
 				}
 				in.Delim(']')
 			}
+		case "once":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Once = bool(in.Bool())
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -2642,6 +2648,11 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes17(out *jwriter.Wr
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"once\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.Once))
 	}
 	out.RawByte('}')
 }

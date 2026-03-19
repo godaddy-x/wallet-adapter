@@ -210,6 +210,9 @@ type BlockScanResult struct {
 	ExtractData []*ExtractDataItem `json:"extractData"`
 	// ContractReceipts 为合约回执列表（key 字段可用于标识，如 contractAddr:logIndex）。
 	ContractReceipts []*ContractReceiptItem `json:"contractReceipts"`
+	// Once 标记本次扫描是否为“插队/一次性”扫描（由 ScanBlockPrioritize 触发）。
+	// 业务方可据此区分：true=插队扫描结果，false=主线 RunScanLoop 常规扫描结果。
+	Once bool `json:"once"`
 }
 
 // TxVerifyResult 按 txid 复核链上交易并返回“可入账结果集”的输出。
