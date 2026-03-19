@@ -38,6 +38,8 @@ type (
 	TxInput              = types.TxInput
 	TxOutPut             = types.TxOutPut
 	TxExtractData        = types.TxExtractData
+	ExtractDataItem      = types.ExtractDataItem
+	ContractReceiptItem  = types.ContractReceiptItem
 	ScanTarget           = types.ScanTarget
 	ScanTargetParam      = types.ScanTargetParam
 	ScanTargetResult     = types.ScanTargetResult

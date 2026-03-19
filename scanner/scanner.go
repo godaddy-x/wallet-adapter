@@ -43,7 +43,7 @@ type BlockScanner interface {
 
 	GetCurrentBlockHeader() (*types.BlockHeader, error)
 	GetGlobalMaxBlockHeight() uint64
-	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error)
+	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
 	// VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集。
 	// 约定：error 用于表达“RPC/系统错误导致无法完成复核”；业务层面的不通过以 result.Verified=false + Reason 表达。
@@ -182,7 +182,7 @@ func (bs *Base) GetCurrentBlockHeader() (*types.BlockHeader, error) {
 
 func (bs *Base) GetGlobalMaxBlockHeight() uint64 { return 0 }
 
-func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error) {
+func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error) {
 	return nil, nil, fmt.Errorf("ExtractTransactionAndReceiptData not implement")
 }
 

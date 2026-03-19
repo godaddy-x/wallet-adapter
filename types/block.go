@@ -169,6 +169,22 @@ type BlockchainSyncStatus struct {
 	Syncing            bool
 }
 
+// ExtractDataItem 按 SourceKey 聚合的交易提取结果项。
+//
+//easyjson:json
+type ExtractDataItem struct {
+	SourceKey string           `json:"sourceKey"`
+	Data      []*TxExtractData `json:"data"`
+}
+
+// ContractReceiptItem 合约回执项。
+//
+//easyjson:json
+type ContractReceiptItem struct {
+	Key     string                `json:"key"`
+	Receipt *SmartContractReceipt `json:"receipt"`
+}
+
 // BlockScanResult 单次按高度扫块的结果摘要（供外部系统维护游标、重试与告警）。
 // 设计目标：扫块器不依赖内部存储（BlockchainDAI 可选），外部系统可依据该结果决定是否推进高度或重扫。
 // 注意：不同链实现可按能力填充 TxTotal/TxFailed 等字段；最低要求是 Height + Success + ErrorReason。
@@ -190,10 +206,10 @@ type BlockScanResult struct {
 
 	// Header 为本次扫描对应的区块头（若能成功获取区块）。
 	Header *BlockHeader `json:"header"`
-	// ExtractData 为交易提取结果，按 SourceKey 聚合（仅当实现方开启交易提取时填充）。
-	ExtractData map[string][]*TxExtractData `json:"extractData"`
-	// ContractReceipts 为合约回执集合（实现方可自定义 key，如 contractAddr:logIndex）。
-	ContractReceipts map[string]*SmartContractReceipt `json:"contractReceipts"`
+	// ExtractData 为交易提取结果列表（按 SourceKey 聚合，仅当实现方开启交易提取时填充）。
+	ExtractData []*ExtractDataItem `json:"extractData"`
+	// ContractReceipts 为合约回执列表（key 字段可用于标识，如 contractAddr:logIndex）。
+	ContractReceipts []*ContractReceiptItem `json:"contractReceipts"`
 }
 
 // TxVerifyResult 按 txid 复核链上交易并返回“可入账结果集”的输出。
@@ -211,10 +227,10 @@ type TxVerifyResult struct {
 	Confirmations uint64 `json:"confirmations"`
 	Status        string `json:"status"`
 
-	// ExtractData 为交易提取结果，按 SourceKey 聚合。
-	ExtractData map[string][]*TxExtractData `json:"extractData"`
-	// ContractReceipts 为合约回执集合（实现方可自定义 key，如 txid:contractAddr:logIndex）。
-	ContractReceipts map[string]*SmartContractReceipt `json:"contractReceipts"`
+	// ExtractData 为交易提取结果列表（按 SourceKey 聚合）。
+	ExtractData []*ExtractDataItem `json:"extractData"`
+	// ContractReceipts 为合约回执列表（key 字段可用于标识，如 txid:contractAddr:logIndex）。
+	ContractReceipts []*ContractReceiptItem `json:"contractReceipts"`
 }
 
 // TxTransferExpected 主币/代币单条转账的期望值（用于入账前严格比对）。

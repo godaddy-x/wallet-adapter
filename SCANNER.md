@@ -26,6 +26,8 @@
 - **types/block.go 中的扫块相关类型**
   - `BlockHeader`：区块头
   - `TxExtractData`：交易提取结果
+  - `ExtractDataItem`：按 SourceKey 聚合的交易提取结果项
+  - `ContractReceiptItem`：合约回执项
   - `SmartContractReceipt` / `SmartContractEvent`：合约回执与事件
   - `ScanTargetParam` / `ScanTargetResult`：扫描目标查询
   - `BlockScanResult` / `TxVerifyResult` / `TxVerifyMatchResult`：扫块与复核结果
@@ -59,7 +61,7 @@ type BlockScanner interface {
     GetGlobalMaxBlockHeight() uint64
 
     // 交易 / 回执提取
-    ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) (map[string][]*types.TxExtractData, map[string]*types.SmartContractReceipt, error)
+    ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
     // VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集
     VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
