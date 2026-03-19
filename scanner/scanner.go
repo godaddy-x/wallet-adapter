@@ -45,6 +45,9 @@ type BlockScanner interface {
 	GetGlobalMaxBlockHeight() uint64
 	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
+	// GetBalanceByAddress 查询指定地址的余额。
+	GetBalanceByAddress(address ...string) ([]*types.Balance, error)
+
 	// VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集。
 	// 约定：error 用于表达“RPC/系统错误导致无法完成复核”；业务层面的不通过以 result.Verified=false + Reason 表达。
 	VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
@@ -184,6 +187,92 @@ func (bs *Base) GetGlobalMaxBlockHeight() uint64 { return 0 }
 
 func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error) {
 	return nil, nil, fmt.Errorf("ExtractTransactionAndReceiptData not implement")
+}
+
+// GetBalanceByAddress 默认返回未实现错误，各链扫描器应重写此方法。
+// 实现参考：使用 QueryBalancesConcurrent 辅助函数进行并发查询。
+func (bs *Base) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {
+	return nil, fmt.Errorf("GetBalanceByAddress not implement")
+}
+
+// BalanceQueryFunc 查询单个地址余额的函数签名，供 QueryBalancesConcurrent 使用。
+// 参数 address 为要查询的地址。
+// 返回 confirmed（已确认余额）、unconfirmed（未确认余额）、total（总余额）的字符串表示及错误。
+type BalanceQueryFunc func(address string) (confirmed, unconfirmed, total string, err error)
+
+// QueryBalancesConcurrent 并发查询多个地址余额的辅助函数。
+// 参数 symbol 为链标识；addresses 为地址列表；query 为实际查询函数；concurrency 为并发限制（默认20）。
+// 返回按传入地址顺序排列的 Balance 列表。
+func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query BalanceQueryFunc, concurrency int) ([]*types.Balance, error) {
+	if len(addresses) == 0 {
+		return make([]*types.Balance, 0), nil
+	}
+	if concurrency <= 0 {
+		concurrency = 20
+	}
+
+	type addrResult struct {
+		index   int
+		balance *types.Balance
+	}
+
+	var (
+		result      = make([]*types.Balance, len(addresses))
+		sem         = make(chan struct{}, concurrency)
+		resultChan  = make(chan *addrResult, len(addresses))
+		errChan     = make(chan error, 1)
+		wg          sync.WaitGroup
+	)
+
+	// 结果收集协程
+	go func() {
+		for r := range resultChan {
+			result[r.index] = r.balance
+		}
+	}()
+
+	// 并发查询
+	for i, addr := range addresses {
+		wg.Add(1)
+		go func(idx int, address string) {
+			defer wg.Done()
+
+			sem <- struct{}{}        // 获取信号量
+			defer func() { <-sem }() // 释放信号量
+
+			confirmed, unconfirmed, total, err := query(address)
+			if err != nil {
+				select {
+				case errChan <- fmt.Errorf("query balance for address %s failed: %w", address, err):
+				default:
+				}
+				return
+			}
+
+			resultChan <- &addrResult{
+				index: idx,
+				balance: &types.Balance{
+					Symbol:           symbol,
+					Address:          address,
+					ConfirmBalance:   confirmed,
+					UnconfirmBalance: unconfirmed,
+					Balance:          total,
+				},
+			}
+		}(i, addr)
+	}
+
+	wg.Wait()
+	close(resultChan)
+
+	// 检查是否有错误
+	select {
+	case err := <-errChan:
+		return nil, err
+	default:
+	}
+
+	return result, nil
 }
 
 func (bs *Base) VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error) {

@@ -142,6 +142,7 @@ func ListSymbols() []string { return chain.ListSymbols() }
 type BlockScanner = scanner.BlockScanner
 type BlockScannerBase = scanner.Base
 type BlockScanTargetFunc = scanner.BlockScanTargetFunc
+type BalanceQueryFunc = scanner.BalanceQueryFunc
 
 var NewBlockScannerBase = scanner.NewBlockScannerBase
 

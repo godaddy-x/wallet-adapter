@@ -63,6 +63,9 @@ type BlockScanner interface {
     // 交易 / 回执提取
     ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
+    // GetBalanceByAddress 查询指定地址的余额
+    GetBalanceByAddress(address ...string) ([]*types.Balance, error)
+
     // VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集
     VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
 
@@ -144,8 +147,43 @@ bs.SetTokenMetadataFunc(func(symbol, contractAddr string) *types.SmartContract {
 
 - 提供 `ScanTargetFunc` 和 `TokenMetadataFunc` 的注入方法
 - 为所有 `BlockScanner` 接口方法提供默认"未实现"返回
+- 提供 `QueryBalancesConcurrent` 辅助函数，用于并发查询地址余额
 
 链实现嵌入 `*scanner.Base` 后，按需重写需要的方法即可。
+
+### 4.1 使用 QueryBalancesConcurrent 实现 GetBalanceByAddress
+
+```go
+// GetBalanceByAddress 并发查询多个地址余额
+func (bs *MyChainScanner) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {
+    // 定义查询函数：查询单个地址的已确认、未确认、总余额
+    queryFunc := func(addr string) (confirmed, unconfirmed, total string, err error) {
+        // 调用链 RPC 查询余额
+        balanceConfirmed, err := bs.GetAddrBalanceFromNode(addr, "latest")
+        if err != nil {
+            return "", "", "", err
+        }
+        
+        // pending 状态包含未确认的交易
+        balanceAll, err := bs.GetAddrBalanceFromNode(addr, "pending")
+        if err != nil {
+            balanceAll = balanceConfirmed
+        }
+        
+        // 计算未确认余额
+        unconfirmedBI := new(big.Int).Sub(balanceAll, balanceConfirmed)
+        
+        return 
+            ConvertToDecimal(balanceConfirmed),  // confirmed
+            ConvertToDecimal(unconfirmedBI),     // unconfirmed
+            ConvertToDecimal(balanceAll),        // total
+            nil
+    }
+    
+    // 使用 Base 提供的并发查询辅助函数
+    return bs.QueryBalancesConcurrent(bs.Symbol(), address, queryFunc, 20)
+}
+```
 
 ---
 
@@ -158,6 +196,7 @@ bs.SetTokenMetadataFunc(func(symbol, contractAddr string) *types.SmartContract {
    - 重写 `RunScanLoop`：持续扫块循环（或在外部实现循环逻辑）
    - 重写 `VerifyTransactionByTxID` / `VerifyTransactionMatch`：入账前复核
    - 重写 `GetCurrentBlockHeader` / `GetGlobalMaxBlockHeight`：状态查询
+   - 重写 `GetBalanceByAddress`：查询地址余额（可使用 `QueryBalancesConcurrent` 辅助函数）
 
 2. **注入依赖**
    - 调用 `SetBlockScanTargetFunc` 注入扫描目标查询函数
