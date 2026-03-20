@@ -25,7 +25,7 @@ wallet-adapter/
 │   ├── errors.go             # 错误码与 AdapterError
 │   ├── symbol.go             # 链/币种信息 SymbolInfo
 │   ├── contract.go           # 智能合约相关 TokenBalance、SmartContractRawTransaction、SmartContractCallResult、ABIInfo
-│   └── block.go              # 扫块相关 BlockHeader、TxExtractData、Balance、UnscanRecord、SmartContractReceipt 等
+│   └── block.go              # 扫块相关 BlockHeader、TxExtractData、ExtractDataItem、ContractReceiptItem、Balance、UnscanRecord、SmartContractReceipt 等
 ├── wallet/                   # 钱包数据访问接口（与 types 解耦）
 │   └── wallet.go             # Wallet、WalletDAI、WalletDAIBase
 ├── decoder/                  # 解码器（交易 + 地址 + 智能合约）
@@ -42,7 +42,7 @@ wallet-adapter/
 ├── flow/                     # 构建与广播流程（入口：BuildTransaction/BuildSummaryTransaction/SendTransaction）
 │   └── flow.go               # 调 decoder 构建 rawTx，再调 wrapper.SignPendingTxData 得 PendingSignTx；广播前校验 DataSign/TradeSign
 ├── scanner/                  # 区块扫描器
-│   ├── scanner.go            # BlockScanner 接口与 Base（按高度扫块、持续循环、补扫单高度）
+│   ├── scanner.go            # BlockScanner 接口与 Base（按高度扫块、持续循环、插队扫描、地址余额查询）
 │   └── SCANNER.md            # 扫块器详细设计文档
 ```
 
@@ -67,8 +67,9 @@ wallet-adapter/
    - 在 `init()` 或启动时：`adapter.RegAdapter("SYMBOL", yourAdapter)`
 
 4. **（可选）实现 `BlockScanner`**
-   - 嵌入 `scanner.Base`，实现 `ScanBlockWithResult`（按高度扫块并返回结果）、`ScanBlockOnce`（单高度补扫）、`RunScanLoop`（持续扫块循环）、`ResetScanHeight`（重置游标）等。
+   - 嵌入 `scanner.Base`，实现 `ScanBlockWithResult`（按高度扫块并返回结果）、`ScanBlockOnce`（单高度补扫）、`RunScanLoop`（持续扫块循环）、`ScanBlockPrioritize`（插队扫描）、`ResetScanHeight`（重置游标）、`GetBalanceByAddress`（地址余额查询）等。
    - 通过 `SetBlockScanTargetFunc` 设置扫描目标查询，`SetTokenMetadataFunc` 注入合约元数据查询，供扫块时补充合约信息。
+   - `GetBalanceByAddress` 可使用 `QueryBalancesConcurrent` 辅助函数实现并发查询。
 
 5. **（可选）实现 `AddressDecoder`**
    - 嵌入 `decoder.AddressDecoderBase`，按需实现：`PublicKeyToAddress`、`AddressVerify`、`AddressDecode`、`AddressEncode`、WIF、多签、`CustomCreateAddress` 等；未实现的方法由 Base 返回“未实现”。

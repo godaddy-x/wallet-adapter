@@ -728,11 +728,11 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes4(in *jlexer.Lexer
 			} else {
 				out.Decimals = uint32(in.Uint32())
 			}
-		case "logIndex":
+		case "outputIndex":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.LogIndex = int64(in.Int64())
+				out.OutputIndex = int64(in.Int64())
 			}
 		default:
 			in.SkipRecursive()
@@ -774,9 +774,9 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes4(out *jwriter.Wri
 		out.Uint32(uint32(in.Decimals))
 	}
 	{
-		const prefix string = ",\"logIndex\":"
+		const prefix string = ",\"outputIndex\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.LogIndex))
+		out.Int64(int64(in.OutputIndex))
 	}
 	out.RawByte('}')
 }
@@ -1281,11 +1281,11 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes8(in *jlexer.Lexer
 			} else {
 				out.Reason = string(in.String())
 			}
-		case "logIndex":
+		case "outputIndex":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.LogIndex = int64(in.Int64())
+				out.OutputIndex = int64(in.Int64())
 			}
 		case "extParam":
 			if in.IsNull() {
@@ -1407,9 +1407,9 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes8(out *jwriter.Wri
 		out.String(string(in.Reason))
 	}
 	{
-		const prefix string = ",\"logIndex\":"
+		const prefix string = ",\"outputIndex\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.LogIndex))
+		out.Int64(int64(in.OutputIndex))
 	}
 	{
 		const prefix string = ",\"extParam\":"

@@ -248,8 +248,11 @@ type TxTransferExpected struct {
 	Amount string `json:"amount"`
 	// Decimals 仅在 ContractAddr 非空时使用；若为 0 表示由实现方自行确定（不推荐，建议外部明确）。
 	Decimals uint32 `json:"decimals"`
-	// LogIndex 可选：用于唯一定位同一 tx 内的多笔 Transfer 事件；<0 表示不使用。
-	LogIndex int64 `json:"logIndex"`
+	// OutputIndex 可选：用于唯一定位同一 tx 内的多笔记录，语义随场景变化：
+	// - EVM 合约事件：表示事件日志索引（logIndex）
+	// - UTXO 链：表示交易输出索引（vout）
+	// <0 表示不使用该字段的场景。
+	OutputIndex int64 `json:"outputIndex"`
 }
 
 // TxVerifyExpected 入账前复核所需的期望对象（外部系统准备入账的记录摘要）。
@@ -307,9 +310,11 @@ type SmartContractReceipt struct {
 	ConfirmTime int64                 `json:"confirmTime"`
 	Status      string                `json:"status"`
 	Reason      string                `json:"reason"`
-	// LogIndex 表示该回执对应的链上事件序号（用于精确定位同一 tx 内多笔事件）。
-	// 普通不含事件序号的场景保持默认值 0。
-	LogIndex int64 `json:"logIndex"`
+	// OutputIndex 表示该回执对应的输出序号，语义随场景变化：
+	// - EVM 链：表示事件日志索引（logIndex）
+	// - UTXO 链：表示交易输出索引（vout）
+	// 用于精确定位同一 tx 内的多笔记录。
+	OutputIndex int64 `json:"outputIndex"`
 	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation 等）。
 	ExtParam map[string]string `json:"extParam"`
 }

@@ -88,8 +88,14 @@ type Transaction struct {
 	TxID        string   `json:"txid"`
 	AccountID   string   `json:"accountID"`
 	Coin        Coin     `json:"coin"`
-	From        []string `json:"from"`
-	To          []string `json:"to"`
+	// FromAddr 发送方地址列表，与 FromAmt 一一对应
+	FromAddr []string `json:"fromAddr"`
+	// FromAmt 发送方金额列表，与 FromAddr 一一对应
+	FromAmt []string `json:"fromAmt"`
+	// ToAddr 接收方地址列表，与 ToAmt 一一对应
+	ToAddr []string `json:"toAddr"`
+	// ToAmt 接收方金额列表，与 ToAddr 一一对应
+	ToAmt []string `json:"toAmt"`
 	Amount      string   `json:"amount"`
 	Decimal     int32    `json:"decimal"`
 	TxType      uint64   `json:"txType"`
@@ -102,9 +108,11 @@ type Transaction struct {
 	ConfirmTime int64    `json:"confirmTime"`
 	Status      string   `json:"status"`
 	Reason      string   `json:"reason"`
-	// LogIndex 表示该 Transaction 对应的链上事件序号（用于区分同一 tx 内多笔事件）。
-	// 仅在合约事件（如 ERC20 Transfer）场景下有意义；普通主币转账可保持默认 0（由业务自行忽略）。
-	LogIndex int64 `json:"logIndex"`
+	// OutputIndex 表示该 Transaction 对应的输出序号，语义随链类型变化：
+	// - EVM 链：表示事件日志索引（logIndex），>=0 为合约事件，-1 为主币转账，-2 为手续费记录
+	// - UTXO 链（BTC 等）：表示交易输出索引（vout）
+	// 用于精确定位同一 tx 内的多笔记录，确保业务层唯一性。
+	OutputIndex int64 `json:"outputIndex"`
 
 	// FeeType 用于标识该记录是否为手续费类记录（如 "gas"）。
 	// 空值表示该记录为普通转账类记录。

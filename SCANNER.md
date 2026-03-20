@@ -10,8 +10,10 @@
   抽象"一条链的扫块能力"，包括：
   - 按高度扫块（`ScanBlockWithResult`、`ScanBlockOnce`）
   - 持续扫块循环（`RunScanLoop`）
+  - 插队扫描（`ScanBlockPrioritize`）
   - 游标重置（`ResetScanHeight`）
   - 交易 / 合约回执提取
+  - 地址余额查询（`GetBalanceByAddress`）
   - 入账前复核（`VerifyTransactionByTxID`、`VerifyTransactionMatch`）
   - 注入扫描目标函数和合约元数据查询
 
@@ -74,6 +76,10 @@ type BlockScanner interface {
 
     // RunScanLoop 按高度持续扫描区块，回调每个高度的扫描结果给外部系统
     RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error
+
+    // ScanBlockPrioritize 插队扫描指定高度列表（用于补扫/漏扫紧急修复）。
+    // 说明：插队高度在 RunScanLoop 主线扫描间隙优先处理，结果通过 handleBlock 回调。
+    ScanBlockPrioritize(heights []uint64) error
 }
 ```
 
@@ -147,6 +153,7 @@ bs.SetTokenMetadataFunc(func(symbol, contractAddr string) *types.SmartContract {
 
 - 提供 `ScanTargetFunc` 和 `TokenMetadataFunc` 的注入方法
 - 为所有 `BlockScanner` 接口方法提供默认"未实现"返回
+- 提供 `Run` / `Pause` / `Stop` / `Restart` 运行控制方法
 - 提供 `QueryBalancesConcurrent` 辅助函数，用于并发查询地址余额
 
 链实现嵌入 `*scanner.Base` 后，按需重写需要的方法即可。
@@ -194,9 +201,10 @@ func (bs *MyChainScanner) GetBalanceByAddress(address ...string) ([]*types.Balan
    - 重写 `ScanBlockWithResult`：按高度扫描区块、解析交易/回执、过滤目标、返回结果
    - 重写 `ScanBlockOnce`：单高度补扫逻辑（可复用 `ScanBlockWithResult`）
    - 重写 `RunScanLoop`：持续扫块循环（或在外部实现循环逻辑）
+   - 重写 `ScanBlockPrioritize`：插队扫描指定高度（可选，默认返回未实现错误）
    - 重写 `VerifyTransactionByTxID` / `VerifyTransactionMatch`：入账前复核
    - 重写 `GetCurrentBlockHeader` / `GetGlobalMaxBlockHeight`：状态查询
-   - 重写 `GetBalanceByAddress`：查询地址余额（可使用 `QueryBalancesConcurrent` 辅助函数）
+   - 重写 `GetBalanceByAddress`：查询地址余额（使用 `QueryBalancesConcurrent` 辅助函数）
 
 2. **注入依赖**
    - 调用 `SetBlockScanTargetFunc` 注入扫描目标查询函数

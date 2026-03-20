@@ -199,19 +199,24 @@ func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc Blo
 	return nil, nil, fmt.Errorf("ExtractTransactionAndReceiptData not implement")
 }
 
-// GetBalanceByAddress 默认返回未实现错误，各链扫描器应重写此方法。
-// 实现参考：使用 QueryBalancesConcurrent 辅助函数进行并发查询。
+// GetBalanceByAddress 返回未实现错误，由具体链的扫描器实现。
+// 各链实现应调用 QueryBalancesConcurrent 辅助函数进行并发查询。
 func (bs *Base) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {
 	return nil, fmt.Errorf("GetBalanceByAddress not implement")
 }
 
-// BalanceQueryFunc 查询单个地址余额的函数签名，供 QueryBalancesConcurrent 使用。
-// 参数 address 为要查询的地址。
-// 返回 confirmed（已确认余额）、unconfirmed（未确认余额）、total（总余额）的字符串表示及错误。
+// BalanceQueryFunc 查询单个地址余额的回调函数，由 QueryBalancesConcurrent 调用。
 type BalanceQueryFunc func(address string) (confirmed, unconfirmed, total string, err error)
 
-// QueryBalancesConcurrent 并发查询多个地址余额的辅助函数。
-// 参数 symbol 为链标识；addresses 为地址列表；query 为实际查询函数；concurrency 为并发限制（默认20）。
+// QueryBalancesConcurrent 并发查询多个地址余额。
+// 各链扫描器在实现 GetBalanceByAddress 时调用此辅助方法。
+//
+// 参数：
+//   - symbol: 链标识
+//   - addresses: 地址列表
+//   - query: 单地址查询回调函数，返回已确认余额、未确认余额、总余额
+//   - concurrency: 并发限制，默认20
+//
 // 返回按传入地址顺序排列的 Balance 列表。
 func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query BalanceQueryFunc, concurrency int) ([]*types.Balance, error) {
 	if len(addresses) == 0 {
