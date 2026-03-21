@@ -717,12 +717,6 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes2(in *jlexer.Lexer
 		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		switch key {
-		case "contractID":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.ContractID = string(in.String())
-			}
 		case "symbol":
 			if in.IsNull() {
 				in.Skip()
@@ -774,13 +768,8 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes2(out *jwriter.Wri
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"contractID\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.ContractID))
-	}
-	{
 		const prefix string = ",\"symbol\":"
-		out.RawString(prefix)
+		out.RawString(prefix[1:])
 		out.String(string(in.Symbol))
 	}
 	{
@@ -1849,12 +1838,6 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes8(in *jlexer.Lexer
 			} else {
 				out.IsContract = bool(in.Bool())
 			}
-		case "contractID":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.ContractID = string(in.String())
-			}
 		case "contract":
 			if in.IsNull() {
 				in.Skip()
@@ -1884,11 +1867,6 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes8(out *jwriter.Wri
 		const prefix string = ",\"isContract\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsContract))
-	}
-	{
-		const prefix string = ",\"contractID\":"
-		out.RawString(prefix)
-		out.String(string(in.ContractID))
 	}
 	{
 		const prefix string = ",\"contract\":"

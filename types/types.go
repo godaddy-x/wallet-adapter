@@ -7,7 +7,6 @@ package types
 type Coin struct {
 	Symbol     string        `json:"symbol"`
 	IsContract bool          `json:"isContract"`
-	ContractID string        `json:"contractID"`
 	Contract   SmartContract `json:"contract"`
 }
 
@@ -15,13 +14,12 @@ type Coin struct {
 //
 //easyjson:json
 type SmartContract struct {
-	ContractID string `json:"contractID"`
-	Symbol     string `json:"symbol"`
-	Address    string `json:"address"`
-	Token      string `json:"token"`
-	Protocol   string `json:"protocol"`
-	Name       string `json:"name"`
-	Decimals   uint64 `json:"decimals"`
+	Symbol   string `json:"symbol"`
+	Address  string `json:"address"`
+	Token    string `json:"token"`
+	Protocol string `json:"protocol"`
+	Name     string `json:"name"`
+	Decimals uint64 `json:"decimals"`
 }
 
 // PendingSignTx 待签名交易单：构建后产出，广播时入参。
@@ -83,11 +81,11 @@ type KeySignature struct {
 //
 //easyjson:json
 type Transaction struct {
-	ID          string   `json:"id"`
-	WxID        string   `json:"wxid"`
-	TxID        string   `json:"txid"`
-	AccountID   string   `json:"accountID"`
-	Coin        Coin     `json:"coin"`
+	ID        string `json:"id"`
+	WxID      string `json:"wxid"`
+	TxID      string `json:"txid"`
+	AccountID string `json:"accountID"`
+	Coin      Coin   `json:"coin"`
 	// FromAddr 发送方地址列表，与 FromAmt 一一对应
 	FromAddr []string `json:"fromAddr"`
 	// FromAmt 发送方金额列表，与 FromAddr 一一对应
@@ -95,7 +93,7 @@ type Transaction struct {
 	// ToAddr 接收方地址列表，与 ToAmt 一一对应
 	ToAddr []string `json:"toAddr"`
 	// ToAmt 接收方金额列表，与 ToAddr 一一对应
-	ToAmt []string `json:"toAmt"`
+	ToAmt       []string `json:"toAmt"`
 	Amount      string   `json:"amount"`
 	Decimal     int32    `json:"decimal"`
 	TxType      uint64   `json:"txType"`
