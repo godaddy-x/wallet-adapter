@@ -1,5 +1,5 @@
 // 统一导出：types/wallet/decoder/config/chain/flow/scanner 的类型与函数，便于 import "github.com/godaddy-x/wallet-adapter" 一站式使用。
-// config 包（Configer、INI 解析）需单独 import "github.com/godaddy-x/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
+// config 包（Configer、JSON 解析）需单独 import "github.com/godaddy-x/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
 package adapter
 
 import (

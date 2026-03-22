@@ -1,11 +1,11 @@
-// Package config 提供链配置的通用接口与 INI 解析，供各子类适配器（如 github.com/godaddy-x/wallet-adapter-eth）复用。
+// Package config 提供链配置的通用接口与 JSON 解析，供各子类适配器（如 github.com/godaddy-x/wallet-adapter-eth）复用。
 package config
 
 import (
 	"strconv"
 )
 
-// Configer 供 LoadAssetsConfig 使用的只读配置接口（如 INI 段、map），与常见 config 库兼容。
+// Configer 供 LoadAssetsConfig 使用的只读配置接口（如 JSON 配置段、map），与常见 config 库兼容。
 type Configer interface {
 	String(key string) string
 	Int64(key string) (int64, error)
