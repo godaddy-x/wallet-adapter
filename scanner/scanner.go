@@ -15,6 +15,14 @@ type BlockScanTargetFunc func(target types.ScanTargetParam) types.ScanTargetResu
 // TokenMetadataFunc 根据链标识与合约地址查询代币/合约元数据（SmartContract），供扫块器在提取交易/回执时补充合约信息。
 type TokenMetadataFunc func(symbol, contractAddr string) *types.SmartContract
 
+// ScanLoopParams RunScanLoop 的参数结构体，后续添加新参数无需修改方法签名。
+type ScanLoopParams struct {
+	StartHeight    uint64                                   // 起始扫描高度，从 StartHeight+1 开始扫描
+	Confirmations  uint64                                   // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
+	Interval       time.Duration                            // 每轮扫描后的休眠间隔
+	HandleBlock    func(res *types.BlockScanResult)         // 每扫完一个高度的回调函数（可为 nil）
+}
+
 // BlockScanner 区块扫描器核心接口：
 // - 扫块：按高度扫描区块（同步返回结果或仅返回 error）
 // - 复核：按 txid 二次链上复核，并可与业务期望严格比对
@@ -57,13 +65,14 @@ type BlockScanner interface {
 	VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
 	// RunScanLoop 按高度持续扫描区块：
-	// - 从 startHeight+1 开始，串行向上扫描；
-	// - 每轮根据当前 latest 与 confirmations 计算 safeTo=latest-confirmations，仅扫描至 safeTo；
-	// - 为减少重组影响，可通过 windowSize 控制回填窗口（当 startHeight 早于 safeTo-windowSize 时从窗口起点开始重扫）；
-	// - 每扫完一个高度调用 handleBlock（若非空）将 ScanBlockWithResult 的结果同步回调给外部系统；
-	// - 每轮结束后 sleep interval 再次循环。
+	// - 从 params.StartHeight+1 开始，串行向上扫描；
+	// - 直接扫描至 latest（链上最新高度），不再减去 Confirmations；
+	// - Confirmations 仅用于计算 BlockHeader.Confirmations 字段供业务层参考；
+	// - 每个高度只扫描一次，不会重复扫描，节省资源；
+	// - 每扫完一个高度调用 params.HandleBlock（若非空）将 ScanBlockWithResult 的结果同步回调给外部系统；
+	// - 每轮结束后 sleep Interval 再次循环。
 	// 该方法只负责生产候选结果，入账/确认/重试策略由外部系统基于回调结果与 Verify 接口自行决定。
-	RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error
+	RunScanLoop(params ScanLoopParams) error
 
 	// ScanBlockPrioritize 插队扫描指定高度列表。
 	// 说明：
@@ -298,7 +307,7 @@ func (bs *Base) VerifyTransactionMatch(txid string, expected *types.TxVerifyExpe
 	return nil, fmt.Errorf("VerifyTransactionMatch not implement")
 }
 
-func (bs *Base) RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error {
+func (bs *Base) RunScanLoop(params ScanLoopParams) error {
 	return fmt.Errorf("RunScanLoop not implement")
 }
 

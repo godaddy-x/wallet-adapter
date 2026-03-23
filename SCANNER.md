@@ -9,7 +9,7 @@
 - **BlockScanner 接口**  
   抽象"一条链的扫块能力"，包括：
   - 按高度扫块（`ScanBlockWithResult`、`ScanBlockOnce`）
-  - 持续扫块循环（`RunScanLoop`）
+  - 持续扫块循环（`RunScanLoop`，参数使用 `ScanLoopParams` 结构体，便于扩展）
   - 插队扫描（`ScanBlockPrioritize`）
   - 游标重置（`ResetScanHeight`）
   - 交易 / 合约回执提取
@@ -75,11 +75,21 @@ type BlockScanner interface {
     VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
     // RunScanLoop 按高度持续扫描区块，回调每个高度的扫描结果给外部系统
-    RunScanLoop(startHeight, confirmations, windowSize uint64, interval time.Duration, handleBlock func(res *types.BlockScanResult)) error
+    // 参数使用 ScanLoopParams 结构体，后续添加新字段无需修改方法签名
+    RunScanLoop(params ScanLoopParams) error
 
     // ScanBlockPrioritize 插队扫描指定高度列表（用于补扫/漏扫紧急修复）。
-    // 说明：插队高度在 RunScanLoop 主线扫描间隙优先处理，结果通过 handleBlock 回调。
+    // 说明：插队高度在 RunScanLoop 主线扫描间隙优先处理，结果通过 params.HandleBlock 回调。
     ScanBlockPrioritize(heights []uint64) error
+}
+
+// ScanLoopParams RunScanLoop 的参数结构体
+// 后续添加新参数无需修改方法签名，直接在此结构体添加字段即可
+type ScanLoopParams struct {
+    StartHeight    uint64                           // 起始扫描高度，从 StartHeight+1 开始扫描
+    Confirmations  uint64                           // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
+    Interval       time.Duration                    // 每轮扫描后的休眠间隔
+    HandleBlock    func(res *types.BlockScanResult) // 每扫完一个高度的回调函数（可为 nil）
 }
 ```
 
