@@ -156,7 +156,6 @@ func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
 //easyjson:json
 type ScanTargetResult struct {
 	SourceKey  string
-	Exist      bool
 	TargetInfo interface{}
 }
 

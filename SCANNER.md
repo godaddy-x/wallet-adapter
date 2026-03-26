@@ -121,7 +121,10 @@ func (s *MyChainScanner) ScanBlockWithResult(height uint64) (*types.BlockScanRes
 ### 3.1 扫描目标函数
 
 ```go
-type BlockScanTargetFunc func(target types.ScanTargetParam) types.ScanTargetResult
+// BlockScanTargetFunc 根据扫描目标参数查询所属源信息，供扫块时过滤交易。
+// 参数中的 ScanTargetType 决定 ScanTarget 字段的含义（地址/别名/公钥/备注/合约等）。
+// 返回 nil 表示目标不存在或未订阅，避免创建空对象开销。
+type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetResult
 ```
 
 - `ScanTargetParam` 描述"想要关注什么"：
@@ -129,9 +132,8 @@ type BlockScanTargetFunc func(target types.ScanTargetParam) types.ScanTargetResu
   - `ScanTarget`：地址 / 别名 / 合约地址 / 公钥 / 备注
   - `ScanTargetType`：类型枚举
 
-- `ScanTargetResult` 返回：
+- `ScanTargetResult` 返回（返回 `nil` 表示目标不存在 / 未订阅）：
   - `SourceKey`：业务侧自定义源标识（例如钱包 ID）
-  - `Exist`：该目标是否存在 / 被订阅
 
 在扫描每笔交易时，链实现可通过注入的 `ScanTargetFunc` 进行过滤。
 

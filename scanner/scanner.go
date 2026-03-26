@@ -9,18 +9,20 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// BlockScanTargetFunc 根据扫描目标参数（地址/别名等）查询所属源与是否存在，供扫块时过滤交易。
-type BlockScanTargetFunc func(target types.ScanTargetParam) types.ScanTargetResult
+// BlockScanTargetFunc 根据扫描目标参数查询所属源信息，供扫块时过滤交易。
+// 参数中的 ScanTargetType 决定 ScanTarget 字段的含义（地址/别名/公钥/备注/合约等）。
+// 返回 nil 表示目标不存在或未订阅，避免创建空对象开销。
+type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetResult
 
 // TokenMetadataFunc 根据链标识与合约地址查询代币/合约元数据（SmartContract），供扫块器在提取交易/回执时补充合约信息。
 type TokenMetadataFunc func(symbol, contractAddr string) *types.SmartContract
 
 // ScanLoopParams RunScanLoop 的参数结构体，后续添加新参数无需修改方法签名。
 type ScanLoopParams struct {
-	StartHeight    uint64                                   // 起始扫描高度，从 StartHeight+1 开始扫描
-	Confirmations  uint64                                   // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
-	Interval       time.Duration                            // 每轮扫描后的休眠间隔
-	HandleBlock    func(res *types.BlockScanResult)         // 每扫完一个高度的回调函数（可为 nil）
+	StartHeight   uint64                           // 起始扫描高度，从 StartHeight+1 开始扫描
+	Confirmations uint64                           // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
+	Interval      time.Duration                    // 每轮扫描后的休眠间隔
+	HandleBlock   func(res *types.BlockScanResult) // 每扫完一个高度的回调函数（可为 nil）
 }
 
 // BlockScanner 区块扫描器核心接口：
@@ -77,10 +79,10 @@ type BlockScanner interface {
 	// ScanBlockPrioritize 插队扫描指定高度列表。
 	// 说明：
 	// - 将插队高度加入优先队列，RunScanLoop 会在主线扫描间隙优先处理这些高度；
-	// - 插队高度的扫描结果复用 RunScanLoop 的 handleBlock（如果 RunScanLoop 未运行则无回调）；
+	// - 插队高度的扫描结果复用 RunScanLoop 的 params.HandleBlock（如果 RunScanLoop 未运行则无回调）；
 	// - 插队扫描不影响 RunScanLoop 的主线 cursor 推进逻辑；
 	// - 插队高度按升序处理，且去重；
-	// - 严格要求所有传入的高度都满足 confirmations 要求（height <= latest - confirmations），否则直接返回错误；
+	// - 严格要求所有传入的高度都满足 params.Confirmations 要求（height <= latest - params.Confirmations），否则直接返回错误；
 	// - 调用方可根据错误信息调整高度后重试。
 	ScanBlockPrioritize(heights []uint64) error
 }
@@ -241,11 +243,11 @@ func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query
 	}
 
 	var (
-		result      = make([]*types.Balance, len(addresses))
-		sem         = make(chan struct{}, concurrency)
-		resultChan  = make(chan *addrResult, len(addresses))
-		errChan     = make(chan error, 1)
-		wg          sync.WaitGroup
+		result     = make([]*types.Balance, len(addresses))
+		sem        = make(chan struct{}, concurrency)
+		resultChan = make(chan *addrResult, len(addresses))
+		errChan    = make(chan error, 1)
+		wg         sync.WaitGroup
 	)
 
 	// 结果收集协程

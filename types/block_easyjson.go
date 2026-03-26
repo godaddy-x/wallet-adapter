@@ -1577,12 +1577,6 @@ func easyjson2ff71951DecodeGithubComGodaddyXWalletAdapterTypes10(in *jlexer.Lexe
 			} else {
 				out.SourceKey = string(in.String())
 			}
-		case "Exist":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.Exist = bool(in.Bool())
-			}
 		case "TargetInfo":
 			if m, ok := out.TargetInfo.(easyjson.Unmarshaler); ok {
 				m.UnmarshalEasyJSON(in)
@@ -1609,11 +1603,6 @@ func easyjson2ff71951EncodeGithubComGodaddyXWalletAdapterTypes10(out *jwriter.Wr
 		const prefix string = ",\"SourceKey\":"
 		out.RawString(prefix[1:])
 		out.String(string(in.SourceKey))
-	}
-	{
-		const prefix string = ",\"Exist\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.Exist))
 	}
 	{
 		const prefix string = ",\"TargetInfo\":"
