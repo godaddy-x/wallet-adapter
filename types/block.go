@@ -146,6 +146,14 @@ func NewScanTargetParamForAddress(symbol, address string) ScanTargetParam {
 	return ScanTargetParam{Symbol: symbol, ScanTarget: address, ScanTargetType: ScanTargetTypeAccountAddress}
 }
 
+// NewScanTargetParamForContract 用合约地址构造扫描目标参数（用于 ERC20 Token 转账场景）
+// 业务层可通过 ScanTargetType == ScanTargetTypeContractAddress 识别合约地址，进行白名单校验
+// contractAddr: ERC20 合约地址（存到 Symbol 字段，用于识别代币类型）
+// userAddress: 用户钱包地址（存到 ScanTarget 字段，用于识别归属账户）
+func NewScanTargetParamForContract(contractAddr, userAddress string) ScanTargetParam {
+	return ScanTargetParam{Symbol: contractAddr, ScanTarget: userAddress, ScanTargetType: ScanTargetTypeContractAddress}
+}
+
 // NewScanTargetParamForAlias 用账户别名构造扫描目标参数
 func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
 	return ScanTargetParam{Symbol: symbol, ScanTarget: alias, ScanTargetType: ScanTargetTypeAccountAlias}
