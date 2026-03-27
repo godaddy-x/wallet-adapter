@@ -15,12 +15,11 @@
   - 交易 / 合约回执提取
   - 地址余额查询（`GetBalanceByAddress`）
   - 入账前复核（`VerifyTransactionByTxID`、`VerifyTransactionMatch`）
-  - 注入扫描目标函数和合约元数据查询
+  - 注入扫描目标函数
 
 - **Base 基类** (`scanner.Base`)  
   提供**基础注入与默认未实现方法**：
   - `ScanTargetFunc` 注入（扫描目标查询）
-  - `TokenMetadataFunc` 注入（合约元数据查询）
   - 所有 `BlockScanner` 接口方法的默认"未实现"返回
 
   每条链的扫块实现嵌入 `*scanner.Base`，按需重写接口方法。
@@ -42,9 +41,6 @@
 type BlockScanner interface {
     // 扫描目标：根据地址/别名/公钥等筛选业务关心的交易
     SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
-
-    // 合约元数据：用于补全 token decimals 等信息（建议外部注入，避免扫块器自行猜测默认值）
-    SetTokenMetadataFunc(tokenMetadataFunc TokenMetadataFunc) error
 
     // 运行控制：启动/停止内部扫描任务
     Run() error
@@ -137,25 +133,11 @@ type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetRes
 
 在扫描每笔交易时，链实现可通过注入的 `ScanTargetFunc` 进行过滤。
 
-### 3.2 TokenMetadataFunc：合约元数据查询
+### 3.2 合约元数据返回方式
 
-```go
-type TokenMetadataFunc func(symbol, contractAddr string) *types.SmartContract
-```
-
-- 由外部注入，用于根据链标识和合约地址查询代币/合约元数据
-- 扫块器在解析合约回执时，通过 `TokenMetadataFunc` 填充 `Contract` 字段
-- 注入方式示例：
-
-```go
-bs := scanner.NewBlockScannerBase()
-bs.SetTokenMetadataFunc(func(symbol, contractAddr string) *types.SmartContract {
-    // 从缓存 / 配置 / 远程服务查询
-    return lookupTokenMetadata(symbol, contractAddr)
-})
-```
-
-`TokenMetadataFunc` 是**可选依赖**：未设置时，链实现应在使用前做 nil 判断。
+- 合约场景建议在 `ScanTargetFunc` 中，当 `ScanTargetType == ScanTargetTypeContractAddress` 时，
+  通过 `ScanTargetResult.TargetInfo` 返回 `types.SmartContract`（或其指针）。
+- 链实现可直接使用 `TargetInfo` 填充 `Contract` 字段，避免额外接口注入。
 
 ---
 
@@ -163,7 +145,7 @@ bs.SetTokenMetadataFunc(func(symbol, contractAddr string) *types.SmartContract {
 
 `scanner.Base` 主要职责：
 
-- 提供 `ScanTargetFunc` 和 `TokenMetadataFunc` 的注入方法
+- 提供 `ScanTargetFunc` 的注入方法
 - 为所有 `BlockScanner` 接口方法提供默认"未实现"返回
 - 提供 `Run` / `Pause` / `Stop` / `Restart` 运行控制方法
 - 提供 `QueryBalancesConcurrent` 辅助函数，用于并发查询地址余额
@@ -220,7 +202,6 @@ func (bs *MyChainScanner) GetBalanceByAddress(address ...string) ([]*types.Balan
 
 2. **注入依赖**
    - 调用 `SetBlockScanTargetFunc` 注入扫描目标查询函数
-   - 调用 `SetTokenMetadataFunc` 注入合约元数据查询函数（可选）
 
 3. **在链适配器中挂载**
    - 在 `chain.Adapter` 实现中，`GetBlockScanner()` 返回该链的 `BlockScanner` 实例

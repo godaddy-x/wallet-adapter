@@ -14,9 +14,6 @@ import (
 // 返回 nil 表示目标不存在或未订阅，避免创建空对象开销。
 type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetResult
 
-// TokenMetadataFunc 根据链标识与合约地址查询代币/合约元数据（SmartContract），供扫块器在提取交易/回执时补充合约信息。
-type TokenMetadataFunc func(symbol, contractAddr string) *types.SmartContract
-
 // ScanLoopParams RunScanLoop 的参数结构体，后续添加新参数无需修改方法签名。
 type ScanLoopParams struct {
 	StartHeight   uint64                           // 起始扫描高度，从 StartHeight+1 开始扫描
@@ -34,8 +31,6 @@ type ScanLoopParams struct {
 // - 不包含内部持久化（DAI）与业务查询类能力（余额/地址交易等），这些应由外部系统或独立组件负责。
 type BlockScanner interface {
 	SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
-
-	SetTokenMetadataFunc(tokenMetadataFunc TokenMetadataFunc) error
 
 	// 运行控制：启动/停止内部扫描任务。
 	Run() error
@@ -127,12 +122,11 @@ func (t *taskRunner) Stop() {
 
 func (t *taskRunner) Running() bool { return t != nil && t.stop != nil }
 
-// Base 区块扫描器基类：提供 ScanTargetFunc/TokenMetadataFunc 注入、任务运行控制与默认未实现方法。
+// Base 区块扫描器基类：提供 ScanTargetFunc 注入、任务运行控制与默认未实现方法。
 // 各链实现建议嵌入该结构体，并按需重写 BlockScanner 接口中的方法。
 type Base struct {
-	Mu                sync.RWMutex
-	ScanTargetFunc    BlockScanTargetFunc
-	TokenMetadataFunc TokenMetadataFunc
+	Mu             sync.RWMutex
+	ScanTargetFunc BlockScanTargetFunc
 
 	PeriodOfTask time.Duration
 	taskRunner   *taskRunner
@@ -145,11 +139,6 @@ func NewBlockScannerBase() *Base {
 
 func (bs *Base) SetBlockScanTargetFunc(f BlockScanTargetFunc) error {
 	bs.ScanTargetFunc = f
-	return nil
-}
-
-func (bs *Base) SetTokenMetadataFunc(f TokenMetadataFunc) error {
-	bs.TokenMetadataFunc = f
 	return nil
 }
 
