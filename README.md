@@ -68,7 +68,7 @@ wallet-adapter/
 
 4. **（可选）实现 `BlockScanner`**
    - 嵌入 `scanner.Base`，实现 `ScanBlockWithResult`（按高度扫块并返回结果）、`ScanBlockOnce`（单高度补扫）、`RunScanLoop`（持续扫块循环）、`ScanBlockPrioritize`（插队扫描）、`ResetScanHeight`（重置游标）、`GetBalanceByAddress`（地址余额查询）等。
-  - 通过 `SetBlockScanTargetFunc` 设置扫描目标查询；合约场景下可在 `ScanTargetResult.TargetInfo` 中返回 `SmartContract` 供链实现直接使用。
+  - 通过 `SetBlockScanTargetFunc` 设置批量扫描目标查询（`*ScanTargetParam`，其中 `ScanTarget` 为 `map[string]interface{}` 目标集合：`nil` 未命中，非 `nil` 命中；地址命中建议写 `accountID string`，合约命中建议写 `*types.Coin`）。
    - `GetBalanceByAddress` 可使用 `QueryBalancesConcurrent` 辅助函数实现并发查询。
 
 5. **（可选）实现 `AddressDecoder`**

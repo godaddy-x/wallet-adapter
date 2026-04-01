@@ -9,10 +9,11 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// BlockScanTargetFunc 根据扫描目标参数查询所属源信息，供扫块时过滤交易。
-// 参数中的 ScanTargetType 决定 ScanTarget 字段的含义（地址/别名/公钥/备注/合约等）。
-// 返回 nil 表示目标不存在或未订阅，避免创建空对象开销。
-type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetResult
+// BlockScanTargetFunc 批量查询扫描目标所属信息，供扫块时过滤交易。
+// 调用方会传入单个批次参数（同 Symbol + ScanTargetType），回调在对象上原地填充结果：
+//   - 命中目标：ScanTarget[target] 写入非 nil 值（地址类型建议写 accountID string；合约类型建议写 *types.Coin）
+//   - 未命中目标：ScanTarget[target] 保持 nil
+type BlockScanTargetFunc func(target *types.ScanTargetParam) error
 
 // ScanLoopParams RunScanLoop 的参数结构体，后续添加新参数无需修改方法签名。
 type ScanLoopParams struct {

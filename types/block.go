@@ -122,7 +122,7 @@ type ScanTarget struct {
 	BalanceModelType BalanceModelType
 }
 
-// 扫描目标类型：ScanTargetParam.ScanTargetType 决定 ScanTarget 字段的含义
+// 扫描目标类型：ScanTargetParam.ScanTargetType 决定 ScanTarget 集合 key 的含义
 const (
 	ScanTargetTypeAccountAddress  = 0 // ScanTarget = 账户地址
 	ScanTargetTypeAccountAlias    = 1 // ScanTarget = 账户别名
@@ -132,18 +132,26 @@ const (
 	ScanTargetTypeAddressMemo     = 5 // ScanTarget = 地址备注
 )
 
-// ScanTargetParam 扫描目标参数：由 ScanTargetType 区分 ScanTarget 是 address / alias / 公钥 / 备注等
+// ScanTargetParam 扫描目标参数：由 ScanTargetType 区分 ScanTarget 集合中的 key 是 address / alias / 公钥 / 备注等
 //
 //easyjson:json
 type ScanTargetParam struct {
-	ScanTarget     string // 根据 ScanTargetType 填：地址、别名、公钥或备注
+	// ScanTarget 批量目标集合：key 为目标值（地址/别名/公钥/备注）。
+	// value 为命中结果：
+	//   - nil 表示未命中
+	//   - 非 nil 表示命中（地址类型建议填 accountID string；合约类型建议填 *Coin）
+	ScanTarget     map[string]interface{}
 	Symbol         string
 	ScanTargetType uint64 // 见 ScanTargetType* 常量
 }
 
 // NewScanTargetParamForAddress 用账户地址构造扫描目标参数
 func NewScanTargetParamForAddress(symbol, address string) ScanTargetParam {
-	return ScanTargetParam{Symbol: symbol, ScanTarget: address, ScanTargetType: ScanTargetTypeAccountAddress}
+	return ScanTargetParam{
+		Symbol:         symbol,
+		ScanTarget:     map[string]interface{}{address: nil},
+		ScanTargetType: ScanTargetTypeAccountAddress,
+	}
 }
 
 // NewScanTargetParamForContract 用合约地址构造扫描目标参数（用于 ERC20 合约白名单场景）
@@ -151,12 +159,20 @@ func NewScanTargetParamForAddress(symbol, address string) ScanTargetParam {
 // symbol: 链符号（如 eth）
 // contractAddr: ERC20 合约地址（存到 ScanTarget 字段）
 func NewScanTargetParamForContract(symbol, contractAddr string) ScanTargetParam {
-	return ScanTargetParam{Symbol: symbol, ScanTarget: contractAddr, ScanTargetType: ScanTargetTypeContractAddress}
+	return ScanTargetParam{
+		Symbol:         symbol,
+		ScanTarget:     map[string]interface{}{contractAddr: nil},
+		ScanTargetType: ScanTargetTypeContractAddress,
+	}
 }
 
 // NewScanTargetParamForAlias 用账户别名构造扫描目标参数
 func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
-	return ScanTargetParam{Symbol: symbol, ScanTarget: alias, ScanTargetType: ScanTargetTypeAccountAlias}
+	return ScanTargetParam{
+		Symbol:         symbol,
+		ScanTarget:     map[string]interface{}{alias: nil},
+		ScanTargetType: ScanTargetTypeAccountAlias,
+	}
 }
 
 // ScanTargetResult 扫描目标结果

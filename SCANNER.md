@@ -30,7 +30,7 @@
   - `ExtractDataItem`：按 SourceKey 聚合的交易提取结果项
   - `ContractReceiptItem`：合约回执项
   - `SmartContractReceipt` / `SmartContractEvent`：合约回执与事件
-  - `ScanTargetParam` / `ScanTargetResult`：扫描目标查询
+  - `ScanTargetParam`：扫描目标查询
   - `BlockScanResult` / `TxVerifyResult` / `TxVerifyMatchResult`：扫块与复核结果
 
 ---
@@ -117,27 +117,29 @@ func (s *MyChainScanner) ScanBlockWithResult(height uint64) (*types.BlockScanRes
 ### 3.1 扫描目标函数
 
 ```go
-// BlockScanTargetFunc 根据扫描目标参数查询所属源信息，供扫块时过滤交易。
-// 参数中的 ScanTargetType 决定 ScanTarget 字段的含义（地址/别名/公钥/备注/合约等）。
-// 返回 nil 表示目标不存在或未订阅，避免创建空对象开销。
-type BlockScanTargetFunc func(target types.ScanTargetParam) *types.ScanTargetResult
+// BlockScanTargetFunc 批量查询扫描目标所属信息，供扫块时过滤交易。
+// 调用方会传入单个批次参数（同 Symbol + ScanTargetType），回调在对象上原地填充结果：
+//   - 命中目标：ScanTarget[target] 写入非 nil 值（地址建议写 accountID string，合约建议写 *types.Coin）
+//   - 未命中目标：保持 ScanTarget[target]=nil
+type BlockScanTargetFunc func(target *types.ScanTargetParam) error
 ```
 
 - `ScanTargetParam` 描述"想要关注什么"：
   - `Symbol`：链标识
-  - `ScanTarget`：地址 / 别名 / 合约地址 / 公钥 / 备注
+  - `ScanTarget`：目标集合（`map[string]interface{}`），key 为地址/别名/合约地址/公钥/备注，value 为命中结果（`nil` 未命中，非 `nil` 命中）
   - `ScanTargetType`：类型枚举
 
-- `ScanTargetResult` 返回（返回 `nil` 表示目标不存在 / 未订阅）：
-  - `SourceKey`：业务侧自定义源标识（例如钱包 ID）
+- 命中值约定：
+  - 地址目标：写入 `accountID string`
+  - 合约目标：写入 `*types.Coin`（`IsContract=true` 且包含完整 `Contract` 元数据）
 
 在扫描每笔交易时，链实现可通过注入的 `ScanTargetFunc` 进行过滤。
 
 ### 3.2 合约元数据返回方式
 
 - 合约场景建议在 `ScanTargetFunc` 中，当 `ScanTargetType == ScanTargetTypeContractAddress` 时，
-  通过 `ScanTargetResult.TargetInfo` 返回 `types.SmartContract`（或其指针）。
-- 链实现可直接使用 `TargetInfo` 填充 `Contract` 字段，避免额外接口注入。
+  直接写入 `*types.Coin`（或 `types.Coin`）。
+- 链实现会直接读取 `Coin.Contract` 填充交易中的合约信息。
 
 ---
 
@@ -201,7 +203,7 @@ func (bs *MyChainScanner) GetBalanceByAddress(address ...string) ([]*types.Balan
    - 重写 `GetBalanceByAddress`：查询地址余额（使用 `QueryBalancesConcurrent` 辅助函数）
 
 2. **注入依赖**
-   - 调用 `SetBlockScanTargetFunc` 注入扫描目标查询函数
+   - 调用 `SetBlockScanTargetFunc` 注入批量扫描目标查询函数（推荐在一次回调内完成批量 DB 查询并原地回填）
 
 3. **在链适配器中挂载**
    - 在 `chain.Adapter` 实现中，`GetBlockScanner()` 返回该链的 `BlockScanner` 实例
