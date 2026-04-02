@@ -7,7 +7,7 @@
 - **统一交易类型**：`RawTransaction`、`PendingSignTx`（待签名交易单）、`Transaction`、`SummaryRawTransaction`
 - **核心流程**：入口为 flow（`adapter.BuildTransaction` 创建待签名交易单 PendingSignTx、`adapter.SendTransaction` 验证+广播）；decoder 只负责构建/验签/提交 rawTx，签名由外部 MPC 完成
 - **区块扫描**：`BlockScanner` 接口与 `BlockScannerBase`，支持按高度扫描区块、持续扫块循环、补扫单高度、提取交易与回执
-- **链抽象**：`ChainAdapter`、`TransactionDecoder`、`BlockScanner`、`AddressDecoder`；可选 `WalletDAI` 回调查询钱包/账户/地址等
+- **链抽象**：`ChainAdapter`、`TransactionDecoder`、`BlockScanner`、`AddressDecoder`；可选 `WalletDAI` 回调查询钱包/账户/地址/余额等
 - **链配置**：`config` 包提供 `Configer` 接口与 JSON 解析（`KVFromJSONFile`/`KVFromJSONContent`、`MapConfig`），供 `AssetsConfig.LoadAssetsConfig` 等复用
 - **智能合约**（可选）：`SmartContractDecoder` 与 `ABIDAI`：代币余额、ABI 调用/创建/广播、合约元数据；`GetSmartContractDecoder(symbol)` 按链获取
 - **多链注册**：按 symbol 注册/查询：`RegAdapter`、`GetAdapter`、`GetTransactionDecoder`、`GetBlockScanner`、`GetAddressDecoder`、`GetSmartContractDecoder`
@@ -27,7 +27,7 @@ wallet-adapter/
 │   ├── contract.go           # 智能合约相关 TokenBalance、SmartContractRawTransaction、SmartContractCallResult、ABIInfo
 │   └── block.go              # 扫块相关 BlockHeader、TxExtractData、ExtractDataItem、ContractReceiptItem、Balance、UnscanRecord、SmartContractReceipt 等
 ├── wallet/                   # 钱包数据访问接口（与 types 解耦）
-│   └── wallet.go             # Wallet、WalletDAI、WalletDAIBase
+│   └── wallet.go             # WalletDAI、WalletDAIBase（供 flow/decoder 回调查询钱包/账户/地址/余额等）
 ├── decoder/                  # 解码器（交易 + 地址 + 智能合约）
 │   ├── transaction.go        # TransactionDecoder、TransactionDecoderBase
 │   ├── address.go            # AddressDecoder、AddressDecoderBase

@@ -4,13 +4,15 @@ package wallet
 import "github.com/godaddy-x/wallet-adapter/types"
 
 type SearchParams struct {
-	CountQ      bool   // 是否查询总条数（为 true 时返回的 int64 为总条数）
-	WalletID    string // 钱包 ID，用于过滤
-	AccountID   string // 账户 ID，用于过滤
-	Address     string // 地址，用于过滤
-	LastID      int64  // 上一页最后一条 ID，0 表示首页
-	Limit       int64  // 每页条数
-	MinTransfer string // 筛选余额最小值
+	CountQ          bool   // 是否查询总条数（为 true 时返回的 int64 为总条数）
+	WalletID        string // 钱包 ID，用于过滤
+	AccountID       string // 账户 ID，用于过滤
+	Address         string // 地址，用于过滤
+	LastID          int64  // 上一页最后一条 ID，0 表示首页
+	Limit           int64  // 每页条数
+	ContractAddress string // 合约地址 用于过滤
+	MinTransfer     string // 筛选余额最小值
+	LastTransfer    string // 最后记录余额值
 }
 
 // WalletDAI 钱包数据访问接口，供 flow 与 TransactionDecoder 在构建/验证时回调查询。

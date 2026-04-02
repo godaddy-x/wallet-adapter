@@ -34,6 +34,7 @@ type (
 	BlockHeader          = types.BlockHeader
 	UnscanRecord         = types.UnscanRecord
 	Balance              = types.Balance
+	AssetBalance         = types.AssetBalance
 	Recharge             = types.Recharge
 	TxInput              = types.TxInput
 	TxOutPut             = types.TxOutPut

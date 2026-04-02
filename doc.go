@@ -2,7 +2,7 @@
 //
 // 子包划分：
 //   - types   — 数据类型与错误码（含 BlockHeader、TxExtractData、Balance 等扫块类型）
-//   - wallet  — 钱包数据访问：Wallet、WalletDAI、WalletDAIBase（供 flow/decoder 回调查询钱包/账户/地址等）
+//   - wallet  — 钱包数据访问：Wallet、WalletDAI、WalletDAIBase（供 flow/decoder 回调查询钱包/账户/地址/余额等）
 //   - decoder — 解码器：TransactionDecoder（transaction.go）、AddressDecoder（address.go）、SmartContractDecoder（contract.go，可选），各带 Base 基类；签名由外部 MPC 提供
 //   - config  — 链配置通用接口 Configer、MapConfig 与 JSON 解析（KVFromJSONFile、KVFromJSONContent），供 AssetsConfig.LoadAssetsConfig 复用
 //   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder；AssetsConfig、SmartContractDecoder 可选
