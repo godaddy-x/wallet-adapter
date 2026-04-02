@@ -191,3 +191,19 @@ type Address struct {
 	HDPath    string `json:"hdPath"`
 	ExtParam  string `json:"extParam"`
 }
+
+// 帐户/地址资产余额
+//
+//easyjson:json
+type AssetBalance struct {
+	ID               int64  `json:"id"`
+	WalletID         string `json:"walletID"`
+	AccountID        string `json:"accountID"`
+	Address          string `json:"address"`
+	MainSymbol       string `json:"mainSymbol"` // 基础分类-> mainSymbol
+	Symbol           string `json:"symbol"`
+	ContractAddress  string `json:"contractAddress"`
+	Balance          string `json:"balance"`
+	ConfirmBalance   string `json:"confirmBalance"`
+	UnconfirmBalance string `json:"unconfirmBalance"`
+}

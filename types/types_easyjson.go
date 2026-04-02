@@ -2117,7 +2117,171 @@ func (v *AssetsAccount) UnmarshalJSON(data []byte) error {
 func (v *AssetsAccount) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes9(l, v)
 }
-func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(in *jlexer.Lexer, out *Address) {
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(in *jlexer.Lexer, out *AssetBalance) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		switch key {
+		case "id":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ID = int64(in.Int64())
+			}
+		case "walletID":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.WalletID = string(in.String())
+			}
+		case "accountID":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.AccountID = string(in.String())
+			}
+		case "address":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Address = string(in.String())
+			}
+		case "mainSymbol":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.MainSymbol = string(in.String())
+			}
+		case "symbol":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Symbol = string(in.String())
+			}
+		case "contractAddress":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ContractAddress = string(in.String())
+			}
+		case "balance":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Balance = string(in.String())
+			}
+		case "confirmBalance":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ConfirmBalance = string(in.String())
+			}
+		case "unconfirmBalance":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.UnconfirmBalance = string(in.String())
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(out *jwriter.Writer, in AssetBalance) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"id\":"
+		out.RawString(prefix[1:])
+		out.Int64(int64(in.ID))
+	}
+	{
+		const prefix string = ",\"walletID\":"
+		out.RawString(prefix)
+		out.String(string(in.WalletID))
+	}
+	{
+		const prefix string = ",\"accountID\":"
+		out.RawString(prefix)
+		out.String(string(in.AccountID))
+	}
+	{
+		const prefix string = ",\"address\":"
+		out.RawString(prefix)
+		out.String(string(in.Address))
+	}
+	{
+		const prefix string = ",\"mainSymbol\":"
+		out.RawString(prefix)
+		out.String(string(in.MainSymbol))
+	}
+	{
+		const prefix string = ",\"symbol\":"
+		out.RawString(prefix)
+		out.String(string(in.Symbol))
+	}
+	{
+		const prefix string = ",\"contractAddress\":"
+		out.RawString(prefix)
+		out.String(string(in.ContractAddress))
+	}
+	{
+		const prefix string = ",\"balance\":"
+		out.RawString(prefix)
+		out.String(string(in.Balance))
+	}
+	{
+		const prefix string = ",\"confirmBalance\":"
+		out.RawString(prefix)
+		out.String(string(in.ConfirmBalance))
+	}
+	{
+		const prefix string = ",\"unconfirmBalance\":"
+		out.RawString(prefix)
+		out.String(string(in.UnconfirmBalance))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v AssetBalance) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v AssetBalance) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *AssetBalance) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *AssetBalance) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(l, v)
+}
+func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes11(in *jlexer.Lexer, out *Address) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2195,7 +2359,7 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(in *jlexer.Lexe
 		in.Consumed()
 	}
 }
-func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(out *jwriter.Writer, in Address) {
+func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes11(out *jwriter.Writer, in Address) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2250,23 +2414,23 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(out *jwriter.Wr
 // MarshalJSON supports json.Marshaler interface
 func (v Address) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(&w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes11(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Address) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes10(w, v)
+	easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes11(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Address) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(&r, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes11(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Address) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes10(l, v)
+	easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes11(l, v)
 }

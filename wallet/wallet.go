@@ -4,12 +4,13 @@ package wallet
 import "github.com/godaddy-x/wallet-adapter/types"
 
 type SearchParams struct {
-	CountQ    bool   // 是否查询总条数（为 true 时返回的 int64 为总条数）
-	WalletID  string // 钱包 ID，用于过滤
-	AccountID string // 账户 ID，用于过滤
-	Address   string // 地址，用于过滤
-	LastID    int64  // 上一页最后一条 ID，0 表示首页
-	Limit     int64  // 每页条数
+	CountQ      bool   // 是否查询总条数（为 true 时返回的 int64 为总条数）
+	WalletID    string // 钱包 ID，用于过滤
+	AccountID   string // 账户 ID，用于过滤
+	Address     string // 地址，用于过滤
+	LastID      int64  // 上一页最后一条 ID，0 表示首页
+	Limit       int64  // 每页条数
+	MinTransfer string // 筛选余额最小值
 }
 
 // WalletDAI 钱包数据访问接口，供 flow 与 TransactionDecoder 在构建/验证时回调查询。
@@ -26,6 +27,10 @@ type WalletDAI interface {
 	GetAddress(params SearchParams) (*types.Address, error)
 	// GetAddressList 分页查询地址列表。params 包含分页和查询条件：CountQ 是否查询总条数（为 true 时返回的 int64 为总条数）；WalletID/AccountID/Address 过滤条件；LastID 为上一页最后一条 ID，0 表示首页；Limit 每页条数。
 	GetAddressList(params SearchParams) ([]*types.Address, int64, error)
+	// GetAccountBalanceList 查询帐户余额
+	GetAccountBalanceList(params SearchParams) ([]*types.AssetBalance, int64, error)
+	// GetAddressBalanceList 查询地址余额
+	GetAddressBalanceList(params SearchParams) ([]*types.AssetBalance, int64, error)
 	// SetAddressExtParam 设置地址扩展参数，key 为业务自定义键。
 	SetAddressExtParam(address string, key string, val interface{}) error
 	// GetAddressExtParam 获取地址扩展参数。
@@ -60,6 +65,12 @@ func (WalletDAIBase) GetAddress(params SearchParams) (*types.Address, error) {
 }
 func (WalletDAIBase) GetAddressList(params SearchParams) ([]*types.Address, int64, error) {
 	return nil, 0, errNotImplement("GetAddressList")
+}
+func (WalletDAIBase) GetAccountBalanceList(params SearchParams) ([]*types.AssetBalance, int64, error) {
+	return nil, 0, errNotImplement("GetAccountBalanceList")
+}
+func (WalletDAIBase) GetAddressBalanceList(params SearchParams) ([]*types.AssetBalance, int64, error) {
+	return nil, 0, errNotImplement("GetAddressBalanceList")
 }
 func (WalletDAIBase) SetAddressExtParam(address string, key string, val interface{}) error {
 	return errNotImplement("SetAddressExtParam")
