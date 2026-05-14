@@ -38,6 +38,10 @@ type SmartContractRawTransaction struct {
 	TxTo         string                     `json:"txTo"`
 	AwaitResult  bool                       `json:"awaitResult"`
 	AwaitTimeout uint64                     `json:"awaitTimeout"`
+	// 以下字段由 flow.BuildSmartContractTransaction 填充，语义与 RawTransaction 中同名字段一致；TxType=2 表示合约写链。
+	CreateTime  int64  `json:"createTime"`
+	CreateNonce string `json:"createNonce"`
+	TxType      int64  `json:"txType"`
 }
 
 // SmartContractCallResult 状态常量

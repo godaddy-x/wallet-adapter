@@ -157,4 +157,10 @@ func BuildSummaryTransaction(d TransactionDecoder, wrapper WalletDAI, sumRawTx *
 func SendTransaction(d TransactionDecoder, wrapper WalletDAI, pendingTx *PendingSignTx) (*Transaction, error) {
 	return flow.SendTransaction(d, wrapper, pendingTx)
 }
+func BuildSmartContractTransaction(d SmartContractDecoder, wrapper WalletDAI, rawTx *SmartContractRawTransaction) (*PendingSignTx, error) {
+	return flow.BuildSmartContractTransaction(d, wrapper, rawTx)
+}
+func SendSmartContractTransaction(d SmartContractDecoder, wrapper WalletDAI, pendingTx *PendingSignTx) (*SmartContractReceipt, error) {
+	return flow.SendSmartContractTransaction(d, wrapper, pendingTx)
+}
 func GetRandomSecure(l int) ([]byte, error) { return flow.GetRandomSecure(l) }

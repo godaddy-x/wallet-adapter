@@ -179,3 +179,96 @@ func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pen
 
 	return d.SubmitRawTransaction(wrapper, rawTx)
 }
+
+// BuildSmartContractTransaction 构建合约类原始交易单的 PendingSignTx（与 BuildTransaction 对称）：
+// 1) SmartContractDecoder.CreateSmartContractRawTransaction
+// 2) 填充 createTime/createNonce/txType（TxType=2 表示合约写链，与 RawTransaction 的 0 单笔 / 1 汇总 区分）
+// 3) wrapper.SignPendingTxData 对序列化后的 SmartContractRawTransaction 做业务签
+func BuildSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet.WalletDAI, rawTx *types.SmartContractRawTransaction) (*types.PendingSignTx, error) {
+	if d == nil {
+		return nil, errors.New("smart contract decoder is nil")
+	}
+	if rawTx == nil {
+		return nil, errors.New("rawTx is nil")
+	}
+	if wrapper == nil {
+		return nil, errors.New("wrapper is nil")
+	}
+	if ae := d.CreateSmartContractRawTransaction(wrapper, rawTx); ae != nil {
+		return nil, ae
+	}
+	nonce, err := GetRandomSecure(32)
+	if err != nil {
+		return nil, err
+	}
+	rawTx.CreateTime = time.Now().UnixMilli()
+	rawTx.CreateNonce = hex.EncodeToString(nonce)
+	rawTx.TxType = 2
+
+	txJSON, err := easyjson.Marshal(rawTx)
+	if err != nil {
+		return nil, err
+	}
+	originalTxJSON := string(txJSON)
+
+	signData, err := wrapper.SignPendingTxData(txJSON)
+	if err != nil {
+		return nil, err
+	}
+	signData.Data = originalTxJSON
+	signData.Sid = rawTx.Sid
+	return signData, nil
+}
+
+// SendSmartContractTransaction 广播合约原始交易单（与 SendTransaction 对称）：
+// 校验 dataSign/tradeSign → 反序列化 SmartContractRawTransaction → 合并 SignerList → SubmitSmartContractRawTransaction
+func SendSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet.WalletDAI, pendingTx *types.PendingSignTx) (*types.SmartContractReceipt, error) {
+	if d == nil {
+		return nil, errors.New("smart contract decoder is nil")
+	}
+	if wrapper == nil {
+		return nil, errors.New("wrapper is nil")
+	}
+	if pendingTx == nil {
+		return nil, errors.New("pendingTx is nil")
+	}
+	if pendingTx.Data == "" {
+		return nil, errors.New("pendingTx.data is nil")
+	}
+	if pendingTx.DataSign == "" {
+		return nil, errors.New("pendingTx.dataSign is nil")
+	}
+	if pendingTx.TradeSign == "" {
+		return nil, errors.New("pendingTx.tradeSign is nil")
+	}
+	if len(pendingTx.SignerList) == 0 {
+		return nil, errors.New("pendingTx.signerList is nil")
+	}
+
+	checkData, err := wrapper.SignPendingTxData([]byte(pendingTx.Data))
+	if err != nil {
+		return nil, err
+	}
+	if checkData.DataSign != pendingTx.DataSign || checkData.TradeSign != pendingTx.TradeSign {
+		return nil, errors.New("pendingTx.dataSign or pendingTx.tradeSign invalid")
+	}
+
+	rawTx := &types.SmartContractRawTransaction{}
+	if err := easyjson.Unmarshal([]byte(pendingTx.Data), rawTx); err != nil {
+		return nil, fmt.Errorf("smart contract rawTx json error: %w", err)
+	}
+	for accountID, keySignatures := range rawTx.Signatures {
+		if keySignatures != nil {
+			for k, keySignature := range keySignatures {
+				keySignature.Signature = pendingTx.SignerList[fmt.Sprintf("%s-%d", accountID, k)]
+			}
+		}
+		rawTx.Signatures[accountID] = keySignatures
+	}
+
+	receipt, ae := d.SubmitSmartContractRawTransaction(wrapper, rawTx)
+	if ae != nil {
+		return receipt, ae
+	}
+	return receipt, nil
+}
