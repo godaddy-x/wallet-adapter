@@ -66,6 +66,50 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	return signData, nil
 }
 
+// BuildBatchTransaction 构建批量转账待签单：
+// 1) decoder.CreateBatchRawTransaction 构建 rawTx
+// 2) 补充 createTime/createNonce/txType 并序列化 RawTransaction
+// 3) wrapper.SignPendingTxData 生成 PendingSignTx
+func BuildBatchTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, batch *types.BatchRawRequest) (*types.PendingSignTx, error) {
+	if d == nil {
+		return nil, errors.New("decoder is nil")
+	}
+	if batch == nil {
+		return nil, errors.New("batch is nil")
+	}
+	if wrapper == nil {
+		return nil, errors.New("wrapper is nil")
+	}
+	rawTx, err := d.CreateBatchRawTransaction(wrapper, batch)
+	if err != nil {
+		return nil, err
+	}
+	if rawTx == nil {
+		return nil, errors.New("CreateBatchRawTransaction returned nil rawTx")
+	}
+	nonce, err := GetRandomSecure(32)
+	if err != nil {
+		return nil, err
+	}
+	rawTx.CreateTime = time.Now().UnixMilli()
+	rawTx.CreateNonce = hex.EncodeToString(nonce)
+	rawTx.TxType = 0
+
+	txJSON, err := easyjson.Marshal(rawTx)
+	if err != nil {
+		return nil, err
+	}
+	originalTxJSON := string(txJSON)
+
+	signData, err := wrapper.SignPendingTxData(txJSON)
+	if err != nil {
+		return nil, err
+	}
+	signData.Data = originalTxJSON
+	signData.Sid = rawTx.Sid
+	return signData, nil
+}
+
 // BuildSummaryTransaction 构建汇总交易单列表（每笔可能带 Error）：
 // 由 decoder 返回 RawTransactionWithError 列表，然后逐笔补齐 nonce/time/type -> wrapper 签名 -> 生成 PendingSignTx。
 func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) ([]*types.PendingSignTx, error) {

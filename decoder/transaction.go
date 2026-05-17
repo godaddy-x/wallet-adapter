@@ -7,7 +7,7 @@ import (
 )
 
 // TransactionDecoder 交易单解析器，每条链实现此接口即可接入统一构建与广播流程；签名由外部 MPC 提供。
-// 构建待签 PendingSignTx 的入口为 flow.BuildTransaction，decoder 只负责构建/验签/提交 rawTx。
+// 构建待签 PendingSignTx 的入口为 flow.BuildTransaction / flow.BuildBatchTransaction，decoder 只负责构建/验签/提交 rawTx。
 // wrapper 为 WalletDAI，可为 nil；非 nil 时实现层可回调查询钱包/账户/地址/交易等。
 type TransactionDecoder interface {
 	// CreateRawTransaction 根据 rawTx 构建原始交易，填充 RawHex、Fees、Signatures 等。若 wrapper 非 nil，可回调查询（如 GetAddress/GetAssetsAccountByAddress、账户列表等）。
@@ -24,6 +24,10 @@ type TransactionDecoder interface {
 	EstimateRawTransactionFee(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) error
 	// CreateSummaryRawTransactionWithError 根据汇总参数生成多笔 RawTransactionWithError；若 wrapper 非 nil 可回调查询（如过滤非本业务地址）。
 	CreateSummaryRawTransactionWithError(wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) ([]*types.RawTransactionWithError, error)
+	// CreateBatchRawTransaction 根据 BatchRawRequest 构建批量转账 RawTransaction（不支持批量时基类返回未实现）。
+	CreateBatchRawTransaction(wrapper wallet.WalletDAI, batch *types.BatchRawRequest) (*types.RawTransaction, error)
+	// EstimateBatchRawTransactionFee 估算批量交易手续费并写回 batch 的 EstimatedFees / EstimatedFeeRate（不支持时基类返回未实现）。
+	EstimateBatchRawTransactionFee(wrapper wallet.WalletDAI, batch *types.BatchRawRequest) error
 }
 
 // TransactionDecoderBase 交易单解析器基类，未重写的方法均返回“未实现”，便于链实现时只实现必要方法。
@@ -62,6 +66,16 @@ func (TransactionDecoderBase) EstimateRawTransactionFee(wallet.WalletDAI, *types
 // CreateSummaryRawTransactionWithError 基类默认返回未实现。
 func (TransactionDecoderBase) CreateSummaryRawTransactionWithError(wallet.WalletDAI, *types.SummaryRawTransaction) ([]*types.RawTransactionWithError, error) {
 	return nil, errNotImplement("CreateSummaryRawTransactionWithError")
+}
+
+// CreateBatchRawTransaction 基类默认返回未实现。
+func (TransactionDecoderBase) CreateBatchRawTransaction(wallet.WalletDAI, *types.BatchRawRequest) (*types.RawTransaction, error) {
+	return nil, errNotImplement("CreateBatchRawTransaction")
+}
+
+// EstimateBatchRawTransactionFee 基类默认返回未实现。
+func (TransactionDecoderBase) EstimateBatchRawTransactionFee(wallet.WalletDAI, *types.BatchRawRequest) error {
+	return errNotImplement("EstimateBatchRawTransactionFee")
 }
 
 func errNotImplement(method string) error {
