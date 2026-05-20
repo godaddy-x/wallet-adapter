@@ -6,7 +6,7 @@
 //   - decoder — 解码器：TransactionDecoder（transaction.go）、AddressDecoder（address.go）、SmartContractDecoder（contract.go，可选），各带 Base 基类；签名由外部 MPC 提供
 //   - config  — 链配置通用接口 Configer、MapConfig 与 JSON 解析（KVFromJSONFile、KVFromJSONContent），供 AssetsConfig.LoadAssetsConfig 复用
 //   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder；AssetsConfig、SmartContractDecoder 可选
-//   - flow    — 构建与广播流程 BuildTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
+//   - flow    — 构建与广播流程 BuildTransaction、BuildBatchTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
 //   - scanner — 区块扫描器 BlockScanner 与 Base（按高度扫块、持续循环、插队扫描、地址余额查询）
 //
 // 本包对上述子包做统一导出，便于调用方 import "github.com/godaddy-x/wallet-adapter" 使用。
