@@ -8,6 +8,7 @@
 //   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder；AssetsConfig、SmartContractDecoder 可选
 //   - flow    — 构建与广播流程 BuildTransaction、BuildBatchTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
 //   - scanner — 区块扫描器 BlockScanner 与 Base（按高度扫块、持续循环、插队扫描、地址余额查询）
+//   - amount  — 金额精度换算（人类可读 ↔ 链上最小单位），下游 import "github.com/godaddy-x/wallet-adapter/amount"
 //
 // 本包对上述子包做统一导出，便于调用方 import "github.com/godaddy-x/wallet-adapter" 使用。
 //

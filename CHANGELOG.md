@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.5
+
+- Add public package `amount` for human-readable ↔ on-chain smallest-unit conversion (`StringToBigInt`, `BigIntToDecimal`, `HumanToChainUnit`, `SumHumanTotal`).
+- **Constraints**: All functions only accept non-negative amounts (>= 0). Negative inputs return errors.
+- **API Change**: `BigIntToDecimal` now returns `(string, error)` instead of `string` to handle negative and nil inputs.
+- **Tests**: Comprehensive test coverage including boundary cases (zero, nil, decimals=0, scientific notation, multiple dots, empty string).
+- Downstream services should import `github.com/godaddy-x/wallet-adapter/amount` instead of copying conversion logic.
+
 ## v1.0.4
 
 - Add `types.BatchRawRequest` and `types.BatchTransferRecipient` for batch transfer build flow.

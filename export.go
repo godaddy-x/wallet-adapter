@@ -3,6 +3,9 @@
 package adapter
 
 import (
+	"math/big"
+
+	"github.com/godaddy-x/wallet-adapter/amount"
 	"github.com/godaddy-x/wallet-adapter/chain"
 	"github.com/godaddy-x/wallet-adapter/decoder"
 	"github.com/godaddy-x/wallet-adapter/flow"
@@ -31,29 +34,29 @@ type (
 	SymbolInfoBase          = types.SymbolInfoBase
 	BalanceModelType        = types.BalanceModelType
 	// 扫块相关
-	BlockHeader          = types.BlockHeader
-	UnscanRecord         = types.UnscanRecord
-	Balance              = types.Balance
-	AssetBalance         = types.AssetBalance
-	Recharge             = types.Recharge
-	TxInput              = types.TxInput
-	TxOutPut             = types.TxOutPut
-	TxExtractData        = types.TxExtractData
-	ExtractDataItem      = types.ExtractDataItem
-	ContractReceiptItem  = types.ContractReceiptItem
-	ScanTarget           = types.ScanTarget
-	ScanTargetParam      = types.ScanTargetParam
-	ScanTargetResult     = types.ScanTargetResult
-	BlockchainSyncStatus = types.BlockchainSyncStatus
-	SmartContractReceipt = types.SmartContractReceipt
-	SmartContractEvent   = types.SmartContractEvent
+	BlockHeader            = types.BlockHeader
+	UnscanRecord           = types.UnscanRecord
+	Balance                = types.Balance
+	AssetBalance           = types.AssetBalance
+	Recharge               = types.Recharge
+	TxInput                = types.TxInput
+	TxOutPut               = types.TxOutPut
+	TxExtractData          = types.TxExtractData
+	ExtractDataItem        = types.ExtractDataItem
+	ContractReceiptItem    = types.ContractReceiptItem
+	ScanTarget             = types.ScanTarget
+	ScanTargetParam        = types.ScanTargetParam
+	ScanTargetResult       = types.ScanTargetResult
+	BlockchainSyncStatus   = types.BlockchainSyncStatus
+	SmartContractReceipt   = types.SmartContractReceipt
+	SmartContractEvent     = types.SmartContractEvent
 	BatchRawRequest        = types.BatchRawRequest
 	BatchTransferRecipient = types.BatchTransferRecipient
 	// 智能合约解析相关
-	TokenBalance                  = types.TokenBalance
-	SmartContractRawTransaction   = types.SmartContractRawTransaction
-	SmartContractCallResult       = types.SmartContractCallResult
-	ABIInfo                       = types.ABIInfo
+	TokenBalance                = types.TokenBalance
+	SmartContractRawTransaction = types.SmartContractRawTransaction
+	SmartContractCallResult     = types.SmartContractCallResult
+	ABIInfo                     = types.ABIInfo
 )
 
 const (
@@ -68,9 +71,9 @@ const (
 	ScanTargetTypeAddressPubKey   = types.ScanTargetTypeAddressPubKey
 	ScanTargetTypeAddressMemo     = types.ScanTargetTypeAddressMemo
 	// 智能合约 Raw 类型
-	TxRawTypeHex    = types.TxRawTypeHex
-	TxRawTypeJSON   = types.TxRawTypeJSON
-	TxRawTypeBase64 = types.TxRawTypeBase64
+	TxRawTypeHex                         = types.TxRawTypeHex
+	TxRawTypeJSON                        = types.TxRawTypeJSON
+	TxRawTypeBase64                      = types.TxRawTypeBase64
 	SmartContractCallResultStatusFail    = types.SmartContractCallResultStatusFail
 	SmartContractCallResultStatusSuccess = types.SmartContractCallResultStatusSuccess
 )
@@ -119,7 +122,7 @@ type TransactionDecoder = decoder.TransactionDecoder
 type TransactionDecoderBase = decoder.TransactionDecoderBase
 type AddressDecoder = decoder.AddressDecoder
 type AddressDecoderBase = decoder.AddressDecoderBase
-type SmartContractDecoder    = decoder.SmartContractDecoder
+type SmartContractDecoder = decoder.SmartContractDecoder
 type SmartContractDecoderBase = decoder.SmartContractDecoderBase
 type ABIDAI = decoder.ABIDAI
 
@@ -169,3 +172,21 @@ func SendSmartContractTransaction(d SmartContractDecoder, wrapper WalletDAI, pen
 	return flow.SendSmartContractTransaction(d, wrapper, pendingTx)
 }
 func GetRandomSecure(l int) ([]byte, error) { return flow.GetRandomSecure(l) }
+
+// ----- amount 导出（推荐子包 import "github.com/godaddy-x/wallet-adapter/amount"，亦可使用下列包装函数） -----
+
+func AmountStringToBigInt(amountStr string, decimal int32) (*big.Int, error) {
+	return amount.StringToBigInt(amountStr, decimal)
+}
+
+func AmountBigIntToDecimal(b *big.Int, decimal int32) (string, error) {
+	return amount.BigIntToDecimal(b, decimal)
+}
+
+func AmountHumanToChainUnit(amountStr string, decimal int32) (*big.Int, error) {
+	return amount.HumanToChainUnit(amountStr, decimal)
+}
+
+func AmountHumanToChainUnitString(amountStr string, decimal int32) (string, error) {
+	return amount.HumanToChainUnitString(amountStr, decimal)
+}
