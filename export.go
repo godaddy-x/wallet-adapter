@@ -176,17 +176,17 @@ func GetRandomSecure(l int) ([]byte, error) { return flow.GetRandomSecure(l) }
 // ----- amount 导出（推荐子包 import "github.com/godaddy-x/wallet-adapter/amount"，亦可使用下列包装函数） -----
 
 func AmountStringToBigInt(amountStr string, decimal int32) (*big.Int, error) {
-	return amount.StringToBigInt(amountStr, decimal)
+	return amount.StringToBigInt(amountStr, int64(decimal))
 }
 
 func AmountBigIntToDecimal(b *big.Int, decimal int32) (string, error) {
-	return amount.BigIntToDecimal(b, decimal)
+	return amount.BigIntToDecimal(b, int64(decimal))
 }
 
 func AmountHumanToChainUnit(amountStr string, decimal int32) (*big.Int, error) {
-	return amount.HumanToChainUnit(amountStr, decimal)
+	return amount.HumanToChainUnit(amountStr, int64(decimal))
 }
 
 func AmountHumanToChainUnitString(amountStr string, decimal int32) (string, error) {
-	return amount.HumanToChainUnitString(amountStr, decimal)
+	return amount.HumanToChainUnitString(amountStr, int64(decimal))
 }
