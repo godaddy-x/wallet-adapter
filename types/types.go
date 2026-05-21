@@ -54,6 +54,8 @@ type RawTransaction struct {
 	IsSubmit    bool                       `json:"isSubmit"`
 	Change      *Address                   `json:"change"`
 	ExtParam    map[string]string          `json:"extParam"`
+	// SpeedUp 加速/替换 pending 交易；非空时建单使用固定 nonce 与显式 gas，不走自动 nonce/gas。
+	SpeedUp *SpeedUp `json:"speedUp,omitempty"`
 
 	Sid         string   `json:"sid"`
 	CreateTime  int64    `json:"createTime"`

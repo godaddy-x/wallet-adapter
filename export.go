@@ -52,6 +52,7 @@ type (
 	SmartContractEvent     = types.SmartContractEvent
 	BatchRawRequest        = types.BatchRawRequest
 	BatchTransferRecipient = types.BatchTransferRecipient
+	SpeedUp                = types.SpeedUp
 	// 智能合约解析相关
 	TokenBalance                = types.TokenBalance
 	SmartContractRawTransaction = types.SmartContractRawTransaction

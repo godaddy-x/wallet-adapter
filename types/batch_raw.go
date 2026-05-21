@@ -1,6 +1,8 @@
 package types
 
 // BatchTransferRecipient 批量中单笔收款方（顺序由具体链适配器定义，须与链上编码一致）。
+//
+//easyjson:json
 type BatchTransferRecipient struct {
 	Address string `json:"address"`
 	Amount  string `json:"amount"`
@@ -10,6 +12,8 @@ type BatchTransferRecipient struct {
 //
 // Protocol 为可选扩展字段，由具体链适配器解析与校验；留空时由该适配器按默认批量协议处理。
 // ContractAddress、Recipients 等字段语义亦由各链实现约定。
+//
+//easyjson:json
 type BatchRawRequest struct {
 	Protocol string `json:"protocol,omitempty"`
 
@@ -23,12 +27,14 @@ type BatchRawRequest struct {
 
 	Recipients []BatchTransferRecipient `json:"recipients"`
 
-	FeeRate    string            `json:"feeRate,omitempty"`
-	ExtParam   map[string]string `json:"extParam,omitempty"`
-	Sid        string            `json:"sid,omitempty"`
-	TxType     int64             `json:"txType,omitempty"`
-	Required   uint64            `json:"reqSigs,omitempty"`
-	CreateTime int64             `json:"createTime,omitempty"`
+	FeeRate  string            `json:"feeRate,omitempty"`
+	ExtParam map[string]string `json:"extParam,omitempty"`
+	// SpeedUp 加速/替换 pending 批量交易；语义同 RawTransaction.SpeedUp。
+	SpeedUp    *SpeedUp `json:"speedUp,omitempty"`
+	Sid        string   `json:"sid,omitempty"`
+	TxType     int64    `json:"txType,omitempty"`
+	Required   uint64   `json:"reqSigs,omitempty"`
+	CreateTime int64    `json:"createTime,omitempty"`
 
 	EstimatedFees    string `json:"estimatedFees,omitempty"`
 	EstimatedFeeRate string `json:"estimatedFeeRate,omitempty"`
