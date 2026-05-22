@@ -70,13 +70,16 @@ const (
 	ScanTargetTypeContractAddress = types.ScanTargetTypeContractAddress
 	ScanTargetTypeContractAlias   = types.ScanTargetTypeContractAlias
 	ScanTargetTypeAddressPubKey   = types.ScanTargetTypeAddressPubKey
-	ScanTargetTypeAddressMemo     = types.ScanTargetTypeAddressMemo
+	ScanTargetTypeAddressMemo        = types.ScanTargetTypeAddressMemo
+	ScanTargetTypeBatchSenderAddress = types.ScanTargetTypeBatchSenderAddress
 	// 智能合约 Raw 类型
 	TxRawTypeHex                         = types.TxRawTypeHex
 	TxRawTypeJSON                        = types.TxRawTypeJSON
 	TxRawTypeBase64                      = types.TxRawTypeBase64
 	SmartContractCallResultStatusFail    = types.SmartContractCallResultStatusFail
 	SmartContractCallResultStatusSuccess = types.SmartContractCallResultStatusSuccess
+	SmartContractProtocolERC20           = types.SmartContractProtocolERC20
+	SmartContractProtocolBatchSender     = types.SmartContractProtocolBatchSender
 )
 
 // 错误码

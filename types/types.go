@@ -17,10 +17,17 @@ type SmartContract struct {
 	Symbol   string `json:"symbol"`
 	Address  string `json:"address"`
 	Token    string `json:"token"`
-	Protocol string `json:"protocol"`
+	Protocol string `json:"protocol"` // 合约角色，见 SmartContractProtocol* 常量
 	Name     string `json:"name"`
 	Decimals uint64 `json:"decimals"`
 }
+
+// ScanTarget 合约命中值（*types.Coin / types.Coin）中 SmartContract.Protocol 约定：
+// 业务层登记合约时写入，供链适配器区分 ERC20 代币合约与批量转账 BatchSender 等。
+const (
+	SmartContractProtocolERC20       = "erc20"
+	SmartContractProtocolBatchSender = "batch_sender"
+)
 
 // PendingSignTx 待签名交易单：构建后产出，广播时入参。
 // 构建成功即确定 Data（原始交易单 JSON，贯穿流程不变，仅反序列化读参）、DataSign、TradeSign（用于保证 Data 不被篡改）；

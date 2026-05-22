@@ -128,8 +128,9 @@ const (
 	ScanTargetTypeAccountAlias    = 1 // ScanTarget = 账户别名
 	ScanTargetTypeContractAddress = 2 // ScanTarget = 合约地址
 	ScanTargetTypeContractAlias   = 3 // ScanTarget = 合约别名
-	ScanTargetTypeAddressPubKey   = 4 // ScanTarget = 地址公钥
-	ScanTargetTypeAddressMemo     = 5 // ScanTarget = 地址备注
+	ScanTargetTypeAddressPubKey       = 4 // ScanTarget = 地址公钥
+	ScanTargetTypeAddressMemo         = 5 // ScanTarget = 地址备注
+	ScanTargetTypeBatchSenderAddress  = 6 // ScanTarget = 我方 BatchSender 合约地址（与 ERC20 代币合约白名单分离）
 )
 
 // ScanTargetParam 扫描目标参数：由 ScanTargetType 区分 ScanTarget 集合中的 key 是 address / alias / 公钥 / 备注等
@@ -163,6 +164,16 @@ func NewScanTargetParamForContract(symbol, contractAddr string) ScanTargetParam 
 		Symbol:         symbol,
 		ScanTarget:     map[string]interface{}{contractAddr: nil},
 		ScanTargetType: ScanTargetTypeContractAddress,
+	}
+}
+
+// NewScanTargetParamForBatchSender 用 BatchSender 合约地址构造扫描目标（主币 batchSendNativeToken 扫块入账）。
+// 业务应在合约部署表（如 ow_contract_deploy）查询，而非代币合约表（如 ow_contract）；命中值非 nil 即可。
+func NewScanTargetParamForBatchSender(symbol, batchContractAddr string) ScanTargetParam {
+	return ScanTargetParam{
+		Symbol:         symbol,
+		ScanTarget:     map[string]interface{}{batchContractAddr: nil},
+		ScanTargetType: ScanTargetTypeBatchSenderAddress,
 	}
 }
 

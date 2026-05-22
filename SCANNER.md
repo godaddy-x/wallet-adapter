@@ -140,6 +140,9 @@ type BlockScanTargetFunc func(target *types.ScanTargetParam) error
 - 合约场景建议在 `ScanTargetFunc` 中，当 `ScanTargetType == ScanTargetTypeContractAddress` 时，
   直接写入 `*types.Coin`（或 `types.Coin`）。
 - 链实现会直接读取 `Coin.Contract` 填充交易中的合约信息。
+- **ERC20 代币合约**（`ScanTargetTypeContractAddress`）：查业务侧 **代币合约表**（如 `ow_contract`），命中值写 `*types.Coin`（含 `decimals`）。
+- **BatchSender 批量合约**（`ScanTargetTypeBatchSenderAddress`）：查业务侧 **部署绑定表**（如 `ow_contract_deploy`，`category=batch_transfer`、已确认），与代币表分离；命中值写非 nil（如 `true`、`*OwContractDeploy`）。
+- 两类合约**不要混在同一张表、同一个 ScanTargetType 里**；链适配器按 `ScanTargetType` 分流，不用 `Protocol` 区分表来源。
 
 ---
 
