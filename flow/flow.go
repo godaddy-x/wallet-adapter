@@ -304,7 +304,12 @@ func SendSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet
 	for accountID, keySignatures := range rawTx.Signatures {
 		if keySignatures != nil {
 			for k, keySignature := range keySignatures {
-				keySignature.Signature = pendingTx.SignerList[fmt.Sprintf("%s-%d", accountID, k)]
+				sigKey := fmt.Sprintf("%s-%d", accountID, k)
+				sign, ok := pendingTx.SignerList[sigKey]
+				if !ok || sign == "" {
+					return nil, fmt.Errorf("pendingTx.signerList missing or empty key %q (use CLI SignTransaction type=2)", sigKey)
+				}
+				keySignature.Signature = sign
 			}
 		}
 		rawTx.Signatures[accountID] = keySignatures
