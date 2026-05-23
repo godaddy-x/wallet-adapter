@@ -168,7 +168,7 @@ func NewScanTargetParamForContract(symbol, contractAddr string) ScanTargetParam 
 }
 
 // NewScanTargetParamForBatchSender 用 BatchSender 合约地址构造扫描目标（主币 batchSendNativeToken 扫块入账）。
-// 业务应在合约部署表（如 ow_contract_deploy）查询，而非代币合约表（如 ow_contract）；命中值非 nil 即可。
+// 业务应在部署绑定表查询 BatchSender，在代币合约配置表查询 ERC20；命中值非 nil 即可。
 func NewScanTargetParamForBatchSender(symbol, batchContractAddr string) ScanTargetParam {
 	return ScanTargetParam{
 		Symbol:         symbol,
