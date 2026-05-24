@@ -311,6 +311,16 @@ func easyjson42340b0aDecodeGithubComGodaddyXWalletAdapterTypes1(in *jlexer.Lexer
 			} else {
 				out.AwaitTimeout = uint64(in.Uint64())
 			}
+		case "speedUp":
+			if in.IsNull() {
+				in.Skip()
+				out.SpeedUp = nil
+			} else {
+				if out.SpeedUp == nil {
+					out.SpeedUp = new(SpeedUp)
+				}
+				(*out.SpeedUp).UnmarshalEasyJSON(in)
+			}
 		case "createTime":
 			if in.IsNull() {
 				in.Skip()
@@ -478,6 +488,11 @@ func easyjson42340b0aEncodeGithubComGodaddyXWalletAdapterTypes1(out *jwriter.Wri
 		const prefix string = ",\"awaitTimeout\":"
 		out.RawString(prefix)
 		out.Uint64(uint64(in.AwaitTimeout))
+	}
+	if in.SpeedUp != nil {
+		const prefix string = ",\"speedUp\":"
+		out.RawString(prefix)
+		(*in.SpeedUp).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"createTime\":"
