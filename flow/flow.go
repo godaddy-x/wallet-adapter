@@ -204,17 +204,9 @@ func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pen
 		return nil, errors.New("pendingTx.dataSign or pendingTx.tradeSign invalid")
 	}
 
-	rawTx := &types.RawTransaction{}
-	if err := easyjson.Unmarshal([]byte(pendingTx.Data), rawTx); err != nil {
-		return nil, fmt.Errorf("rawTx json error: %w", err)
-	}
-	for accountID, keySignatures := range rawTx.Signatures {
-		if keySignatures != nil {
-			for k, keySignature := range keySignatures {
-				keySignature.Signature = pendingTx.SignerList[fmt.Sprintf("%s-%d", accountID, k)]
-			}
-		}
-		rawTx.Signatures[accountID] = keySignatures
+	rawTx, err := mergePendingRawTransaction(pendingTx)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := d.VerifyRawTransaction(wrapper, rawTx); err != nil {
@@ -297,22 +289,9 @@ func SendSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet
 		return nil, errors.New("pendingTx.dataSign or pendingTx.tradeSign invalid")
 	}
 
-	rawTx := &types.SmartContractRawTransaction{}
-	if err := easyjson.Unmarshal([]byte(pendingTx.Data), rawTx); err != nil {
-		return nil, fmt.Errorf("smart contract rawTx json error: %w", err)
-	}
-	for accountID, keySignatures := range rawTx.Signatures {
-		if keySignatures != nil {
-			for k, keySignature := range keySignatures {
-				sigKey := fmt.Sprintf("%s-%d", accountID, k)
-				sign, ok := pendingTx.SignerList[sigKey]
-				if !ok || sign == "" {
-					return nil, fmt.Errorf("pendingTx.signerList missing or empty key %q (use CLI SignTransaction type=2)", sigKey)
-				}
-				keySignature.Signature = sign
-			}
-		}
-		rawTx.Signatures[accountID] = keySignatures
+	rawTx, err := mergePendingSmartContractRawTransaction(pendingTx)
+	if err != nil {
+		return nil, err
 	}
 
 	receipt, ae := d.SubmitSmartContractRawTransaction(wrapper, rawTx)

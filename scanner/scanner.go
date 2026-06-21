@@ -48,6 +48,8 @@ type BlockScanner interface {
 	ResetScanHeight(height uint64) error
 
 	GetCurrentBlockHeader() (*types.BlockHeader, error)
+	// GetBlockHash 轻量查询指定高度的区块 hash（eth_getBlockByNumber/full=false 等），供确认阶段校验 newly 是否仍有效。
+	GetBlockHash(height uint64) (string, error)
 	GetGlobalMaxBlockHeight() uint64
 	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
@@ -192,6 +194,10 @@ func (bs *Base) ResetScanHeight(height uint64) error {
 
 func (bs *Base) GetCurrentBlockHeader() (*types.BlockHeader, error) {
 	return nil, fmt.Errorf("GetCurrentBlockHeader not implement")
+}
+
+func (bs *Base) GetBlockHash(height uint64) (string, error) {
+	return "", fmt.Errorf("GetBlockHash not implement")
 }
 
 func (bs *Base) GetGlobalMaxBlockHeight() uint64 { return 0 }
