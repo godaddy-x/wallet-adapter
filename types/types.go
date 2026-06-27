@@ -61,6 +61,8 @@ type RawTransaction struct {
 	IsSubmit    bool                       `json:"isSubmit"`
 	Change      *Address                   `json:"change"`
 	ExtParam    map[string]string          `json:"extParam"`
+	// SignExt 签名校验元数据（JSON 对象字符串），仅 adapter 建单写入；含 chainId、signScheme 等。
+	SignExt string `json:"signExt,omitempty"`
 	// SpeedUp 加速/替换 pending 交易；非空时建单使用固定 nonce 与显式 gas，不走自动 nonce/gas。
 	SpeedUp *SpeedUp `json:"speedUp,omitempty"`
 

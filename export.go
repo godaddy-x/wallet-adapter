@@ -61,15 +61,15 @@ type (
 )
 
 const (
-	TxStatusSuccess               = types.TxStatusSuccess
-	TxStatusFail                  = types.TxStatusFail
-	BalanceModelTypeAddress       = types.BalanceModelTypeAddress
-	BalanceModelTypeAccount       = types.BalanceModelTypeAccount
-	ScanTargetTypeAccountAddress  = types.ScanTargetTypeAccountAddress
-	ScanTargetTypeAccountAlias    = types.ScanTargetTypeAccountAlias
-	ScanTargetTypeContractAddress = types.ScanTargetTypeContractAddress
-	ScanTargetTypeContractAlias   = types.ScanTargetTypeContractAlias
-	ScanTargetTypeAddressPubKey   = types.ScanTargetTypeAddressPubKey
+	TxStatusSuccess                  = types.TxStatusSuccess
+	TxStatusFail                     = types.TxStatusFail
+	BalanceModelTypeAddress          = types.BalanceModelTypeAddress
+	BalanceModelTypeAccount          = types.BalanceModelTypeAccount
+	ScanTargetTypeAccountAddress     = types.ScanTargetTypeAccountAddress
+	ScanTargetTypeAccountAlias       = types.ScanTargetTypeAccountAlias
+	ScanTargetTypeContractAddress    = types.ScanTargetTypeContractAddress
+	ScanTargetTypeContractAlias      = types.ScanTargetTypeContractAlias
+	ScanTargetTypeAddressPubKey      = types.ScanTargetTypeAddressPubKey
 	ScanTargetTypeAddressMemo        = types.ScanTargetTypeAddressMemo
 	ScanTargetTypeBatchSenderAddress = types.ScanTargetTypeBatchSenderAddress
 	// 智能合约 Raw 类型
@@ -159,9 +159,6 @@ var NewBlockScannerBase = scanner.NewBlockScannerBase
 // ----- flow 导出 -----
 func BuildTransaction(d TransactionDecoder, wrapper WalletDAI, rawTx *RawTransaction) (*PendingSignTx, error) {
 	return flow.BuildTransaction(d, wrapper, rawTx)
-}
-func BuildBatchTransaction(d TransactionDecoder, wrapper WalletDAI, batch *BatchRawRequest) (*PendingSignTx, error) {
-	return flow.BuildBatchTransaction(d, wrapper, batch)
 }
 func BuildSummaryTransaction(d TransactionDecoder, wrapper WalletDAI, sumRawTx *SummaryRawTransaction) ([]*PendingSignTx, error) {
 	return flow.BuildSummaryTransaction(d, wrapper, sumRawTx)

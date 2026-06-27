@@ -1104,6 +1104,12 @@ func easyjson6601e8cdDecodeGithubComGodaddyXWalletAdapterTypes4(in *jlexer.Lexer
 				}
 				in.Delim('}')
 			}
+		case "signExt":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.SignExt = string(in.String())
+			}
 		case "speedUp":
 			if in.IsNull() {
 				in.Skip()
@@ -1357,6 +1363,11 @@ func easyjson6601e8cdEncodeGithubComGodaddyXWalletAdapterTypes4(out *jwriter.Wri
 			}
 			out.RawByte('}')
 		}
+	}
+	if in.SignExt != "" {
+		const prefix string = ",\"signExt\":"
+		out.RawString(prefix)
+		out.String(string(in.SignExt))
 	}
 	if in.SpeedUp != nil {
 		const prefix string = ",\"speedUp\":"

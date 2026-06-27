@@ -1,5 +1,10 @@
 # Changelog
 
+## 生产批量路径说明（2026-06-27）
+
+- **生产批量转账** 使用 open_scanner `CreateBatchTransferTrade` → `SmartContractRawTransaction`（CLI type=2），**不再**通过 `adapter.BuildBatchTransaction`（v1.0.4 历史 API）。
+- 遗留 type=0 批量 pending 仍可由 wallet-adapter-eth 做交叉校验。
+
 ## v1.0.5
 
 - Add public package `amount` for human-readable ↔ on-chain smallest-unit conversion (`StringToBigInt`, `BigIntToDecimal`, `HumanToChainUnit`, `SumHumanTotal`).

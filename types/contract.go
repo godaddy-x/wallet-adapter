@@ -40,6 +40,8 @@ type SmartContractRawTransaction struct {
 	AwaitTimeout uint64                     `json:"awaitTimeout"`
 	// SpeedUp 加速/替换 pending 合约写链交易；非空时建单使用固定 nonce 与显式 gas。
 	SpeedUp *SpeedUp `json:"speedUp,omitempty"`
+	// SignExt 签名校验元数据（JSON 对象字符串），仅 adapter 建单写入。
+	SignExt string `json:"signExt,omitempty"`
 	// 以下字段由 flow.BuildSmartContractTransaction 填充，语义与 RawTransaction 中同名字段一致；TxType=2 表示合约写链。
 	CreateTime  int64  `json:"createTime"`
 	CreateNonce string `json:"createNonce"`

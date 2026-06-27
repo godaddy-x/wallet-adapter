@@ -5,7 +5,7 @@
 ## 能力概览
 
 - **统一交易类型**：`RawTransaction`、`PendingSignTx`（待签名交易单）、`Transaction`、`SummaryRawTransaction`
-- **批量转账**（v1.0.4+）：`BatchRawRequest`、`BatchTransferRecipient`；`adapter.BuildBatchTransaction` 调链上 `CreateBatchRawTransaction`（如 EVM `batchSendNativeToken` / `batchSendERC20`）
+- **批量转账（历史 type=0）**：类型 `BatchRawRequest` 仍存在于 `types/`；**生产批量** 已改为 scanner `CreateBatchTransferTrade` → `SmartContractRawTransaction`（CLI type=2），不再提供 `adapter.BuildBatchTransaction`
 - **核心流程**：入口为 flow（`adapter.BuildTransaction` 创建待签名交易单 PendingSignTx、`adapter.SendTransaction` 验证+广播）；decoder 只负责构建/验签/提交 rawTx，签名由外部 MPC 完成
 - **区块扫描**：`BlockScanner` 接口与 `BlockScannerBase`，支持按高度扫描区块、持续扫块循环、补扫单高度、提取交易与回执
 - **链抽象**：`ChainAdapter`、`TransactionDecoder`、`BlockScanner`、`AddressDecoder`；可选 `WalletDAI` 回调查询钱包/账户/地址/余额等
@@ -42,7 +42,7 @@ wallet-adapter/
 │   ├── config.go             # AssetsConfig、AssetsConfigBase
 │   └── registry.go           # RegAdapter、GetAdapter、GetTransactionDecoder 等
 ├── flow/                     # 构建与广播流程（入口：BuildTransaction/BuildSummaryTransaction/SendTransaction）
-│   └── flow.go               # BuildTransaction / BuildBatchTransaction；广播前校验 DataSign/TradeSign
+│   └── flow.go               # BuildTransaction / SendTransaction；广播前校验 DataSign/TradeSign
 ├── scanner/                  # 区块扫描器
 │   ├── scanner.go            # BlockScanner 接口与 Base（按高度扫块、持续循环、插队扫描、地址余额查询）
 │   └── SCANNER.md            # 扫块器详细设计文档
