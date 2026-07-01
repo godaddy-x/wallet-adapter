@@ -1,5 +1,5 @@
-// 地址解析器：编解码、校验、WIF、多签、自定义创建地址。
-// 各链嵌入 AddressDecoderBase 并仅实现需要的方法。
+// Address decoder: encode/decode, validation, WIF, multisig, custom address creation.
+// Each chain embeds AddressDecoderBase and implements only the methods it needs.
 package decoder
 
 import (
@@ -8,29 +8,29 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// AddressDecoder 地址解析器接口。通用方法：PublicKeyToAddress、AddressVerify、AddressDecode、AddressEncode；BTC 系可选 WIF、RedeemScript；可选 CustomCreateAddress。
+// AddressDecoder address decoder interface. Common methods: PublicKeyToAddress, AddressVerify, AddressDecode, AddressEncode; BTC-family chains may implement WIF, RedeemScript; CustomCreateAddress is optional.
 type AddressDecoder interface {
-	// PrivateKeyToWIF 将私钥转为 WIF（BTC 系）。
+	// PrivateKeyToWIF converts a private key to WIF (BTC-family).
 	PrivateKeyToWIF(priv []byte, isTestnet bool) (string, error)
-	// PublicKeyToAddress 公钥转链上地址。
+	// PublicKeyToAddress converts a public key to an on-chain address.
 	PublicKeyToAddress(pub []byte, isTestnet bool) (string, error)
-	// WIFToPrivateKey WIF 转私钥（BTC 系）。
+	// WIFToPrivateKey converts WIF to a private key (BTC-family).
 	WIFToPrivateKey(wif string, isTestnet bool) ([]byte, error)
-	// RedeemScriptToAddress 赎回脚本转多签地址（BTC 系）。
+	// RedeemScriptToAddress converts a redeem script to a multisig address (BTC-family).
 	RedeemScriptToAddress(pubs [][]byte, required uint64, isTestnet bool) (string, error)
-	// AddressDecode 地址解码为内部表示（如字节）。
+	// AddressDecode decodes an address to an internal representation (e.g. bytes).
 	AddressDecode(addr string, opts ...interface{}) ([]byte, error)
-	// AddressEncode 内部表示编码为链上地址。
+	// AddressEncode encodes an internal representation to an on-chain address.
 	AddressEncode(pub []byte, opts ...interface{}) (string, error)
-	// AddressVerify 校验地址格式是否合法。
+	// AddressVerify checks whether the address format is valid.
 	AddressVerify(addr string, opts ...interface{}) bool
-	// CustomCreateAddress 按链规则派生新地址（可选）。
+	// CustomCreateAddress derives a new address per chain rules (optional).
 	CustomCreateAddress(account *types.AssetsAccount, newIndex uint64) (*types.Address, error)
-	// SupportCustomCreateAddressFunction 是否支持 CustomCreateAddress。
+	// SupportCustomCreateAddressFunction reports whether CustomCreateAddress is supported.
 	SupportCustomCreateAddressFunction() bool
 }
 
-// AddressDecoderBase 地址解析器基类，未重写的方法返回“未实现”或 false，便于链只实现需要的方法。
+// AddressDecoderBase is the address decoder base class; unimplemented methods return "not implemented" or false so chains only implement what they need.
 type AddressDecoderBase struct{}
 
 func (AddressDecoderBase) PrivateKeyToWIF([]byte, bool) (string, error) {

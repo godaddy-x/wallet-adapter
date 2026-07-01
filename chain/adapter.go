@@ -1,4 +1,4 @@
-// Package chain 链适配器接口与注册表，提供 ChainAdapter 及按 symbol 的 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder/ListSymbols。
+// Package chain chain adapter interface and registry, providing ChainAdapter and RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder/ListSymbols by symbol.
 package chain
 
 import (
@@ -7,7 +7,7 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// ChainAdapter 链适配器接口：多主链统一入口，聚合 SymbolInfo、AssetsConfig、TransactionDecoder、BlockScanner、AddressDecoder；可选 SmartContractDecoder。
+// ChainAdapter chain adapter interface: unified multi-chain entry aggregating SymbolInfo, AssetsConfig, TransactionDecoder, BlockScanner, AddressDecoder; SmartContractDecoder is optional.
 type ChainAdapter interface {
 	types.SymbolInfo
 	AssetsConfig
@@ -15,11 +15,11 @@ type ChainAdapter interface {
 	GetTransactionDecoder() decoder.TransactionDecoder
 	GetBlockScanner() scanner.BlockScanner
 	GetAddressDecoder() decoder.AddressDecoder
-	// GetSmartContractDecoder 智能合约解析器，可选；不支持合约的链返回 nil
+	// GetSmartContractDecoder smart contract decoder, optional; chains without contract support return nil
 	GetSmartContractDecoder() decoder.SmartContractDecoder
 }
 
-// ChainAdapterBase 基类，GetTransactionDecoder / GetBlockScanner / GetAddressDecoder / GetSmartContractDecoder 返回 nil
+// ChainAdapterBase base class; GetTransactionDecoder / GetBlockScanner / GetAddressDecoder / GetSmartContractDecoder return nil
 type ChainAdapterBase struct {
 	types.SymbolInfoBase
 	AssetsConfigBase

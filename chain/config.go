@@ -1,12 +1,12 @@
 package chain
 
-// AssetsConfig 链配置加载接口（可选），由 ChainAdapter 聚合。
+// AssetsConfig chain config loading interface (optional), aggregated by ChainAdapter.
 type AssetsConfig interface {
 	LoadAssetsConfig(config interface{}) error
 	InitAssetsConfig() (interface{}, error)
 }
 
-// AssetsConfigBase 默认空实现
+// AssetsConfigBase default empty implementation.
 type AssetsConfigBase struct{}
 
 func (AssetsConfigBase) LoadAssetsConfig(config interface{}) error { return nil }

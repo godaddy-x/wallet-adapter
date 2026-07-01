@@ -8,7 +8,7 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// Result 签前 message 复现校验结果。
+// Result pre-sign message reproduction verification result.
 type Result struct {
 	OK                bool              `json:"ok"`
 	Symbol            string            `json:"symbol"`
@@ -25,7 +25,7 @@ type schemeVerifier func(data string, txType int64, signExt map[string]string) (
 
 var schemeVerifiers = make(map[string]schemeVerifier)
 
-// RegisterScheme 注册 signScheme 对应的签前校验实现（如 wallet-adapter-eth 注册 eip155）。
+// RegisterScheme registers a pre-sign verification implementation for signScheme (e.g. wallet-adapter-eth registers eip155).
 func RegisterScheme(scheme string, fn schemeVerifier) {
 	scheme = strings.TrimSpace(scheme)
 	if scheme == "" || fn == nil {
@@ -34,8 +34,8 @@ func RegisterScheme(scheme string, fn schemeVerifier) {
 	schemeVerifiers[scheme] = fn
 }
 
-// VerifyPendingSignData 校验 PendingSignTx.Data：解析 signExt 并按 signScheme 复现 message。
-// CLI 须在启动时调用各链 Register（如 eth.RegisterSignVerify）。
+// VerifyPendingSignData validates PendingSignTx.Data: parses signExt and reproduces message per signScheme.
+// CLI must call each chain's Register at startup (e.g. eth.RegisterSignVerify).
 func VerifyPendingSignData(data string) (*Result, error) {
 	data = strings.TrimSpace(data)
 	if data == "" {
@@ -98,7 +98,7 @@ func parsePendingHeader(data string) (*pendingHeader, error) {
 	return &hdr, nil
 }
 
-// NormalizeHex32 去掉 0x 并转小写，便于 message 比对。
+// NormalizeHex32 strips 0x and lowercases for message comparison.
 func NormalizeHex32(hex string) string {
 	hex = strings.TrimSpace(hex)
 	hex = strings.TrimPrefix(hex, "0x")

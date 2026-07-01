@@ -13,14 +13,14 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
-// 按 symbol 注册/查询：RegAdapter、GetAdapter、GetTransactionDecoder、GetBlockScanner、GetAddressDecoder、GetSmartContractDecoder、ListSymbols。
+// Register/query by symbol: RegAdapter, GetAdapter, GetTransactionDecoder, GetBlockScanner, GetAddressDecoder, GetSmartContractDecoder, ListSymbols.
 
 var (
 	adapters   = make(map[string]ChainAdapter)
 	adaptersMu sync.RWMutex
 )
 
-// RegAdapter 注册链适配器，symbol 一般为大写（如 BTC、ETH、BTM）
+// RegAdapter registers a chain adapter; symbol is usually uppercase (e.g. BTC, ETH, BTM)
 func RegAdapter(symbol string, a ChainAdapter) {
 	adaptersMu.Lock()
 	defer adaptersMu.Unlock()
@@ -30,7 +30,7 @@ func RegAdapter(symbol string, a ChainAdapter) {
 	adapters[symbol] = a
 }
 
-// GetAdapter 按 symbol 获取链适配器
+// GetAdapter returns the chain adapter for symbol
 func GetAdapter(symbol string) (ChainAdapter, error) {
 	adaptersMu.RLock()
 	defer adaptersMu.RUnlock()
@@ -41,7 +41,7 @@ func GetAdapter(symbol string) (ChainAdapter, error) {
 	return a, nil
 }
 
-// GetTransactionDecoder 按 symbol 获取该链的 TransactionDecoder
+// GetTransactionDecoder returns the TransactionDecoder for symbol
 func GetTransactionDecoder(symbol string) (decoder.TransactionDecoder, error) {
 	a, err := GetAdapter(symbol)
 	if err != nil {
@@ -54,7 +54,7 @@ func GetTransactionDecoder(symbol string) (decoder.TransactionDecoder, error) {
 	return d, nil
 }
 
-// GetBlockScanner 按 symbol 获取该链的 BlockScanner
+// GetBlockScanner returns the BlockScanner for symbol
 func GetBlockScanner(symbol string) (scanner.BlockScanner, error) {
 	a, err := GetAdapter(symbol)
 	if err != nil {
@@ -67,7 +67,7 @@ func GetBlockScanner(symbol string) (scanner.BlockScanner, error) {
 	return s, nil
 }
 
-// GetAddressDecoder 按 symbol 获取该链的 AddressDecoder
+// GetAddressDecoder returns the AddressDecoder for symbol
 func GetAddressDecoder(symbol string) (decoder.AddressDecoder, error) {
 	a, err := GetAdapter(symbol)
 	if err != nil {
@@ -80,7 +80,7 @@ func GetAddressDecoder(symbol string) (decoder.AddressDecoder, error) {
 	return d, nil
 }
 
-// GetSmartContractDecoder 按 symbol 获取该链的 SmartContractDecoder（可选，不支持则返回错误）
+// GetSmartContractDecoder returns the SmartContractDecoder for symbol (optional; error if unsupported)
 func GetSmartContractDecoder(symbol string) (decoder.SmartContractDecoder, error) {
 	a, err := GetAdapter(symbol)
 	if err != nil {
@@ -93,7 +93,7 @@ func GetSmartContractDecoder(symbol string) (decoder.SmartContractDecoder, error
 	return d, nil
 }
 
-// ListSymbols 返回已注册的所有 symbol
+// ListSymbols returns all registered symbols
 func ListSymbols() []string {
 	adaptersMu.RLock()
 	defer adaptersMu.RUnlock()
@@ -104,7 +104,7 @@ func ListSymbols() []string {
 	return symbols
 }
 
-// GenContractID 合约ID：symbol_address 的 SHA256 再 Base64 编码
+// GenContractID contract ID: SHA256 of symbol_address, then Base64-encoded
 func GenContractID(symbol, address string) string {
 	if !strings.HasPrefix(address, "0x") {
 		address = "0x" + address
@@ -113,10 +113,10 @@ func GenContractID(symbol, address string) string {
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
 
-// KeyIDVer Base58Check 版本字节，用于 ComputeKeyID
+// KeyIDVer Base58Check version byte, used by ComputeKeyID
 const KeyIDVer = 0x00
 
-// ComputeKeyID 根据 seed 计算 KeyID：SHA256(seed) -> RIPEMD160 -> Base58Check(KeyIDVer)
+// ComputeKeyID computes KeyID from seed: SHA256(seed) -> RIPEMD160 -> Base58Check(KeyIDVer)
 func ComputeKeyID(seed []byte) string {
 	// Step 1: SHA256(seed)
 	h := sha256.Sum256(seed)
@@ -124,11 +124,11 @@ func ComputeKeyID(seed []byte) string {
 	rh := ripemd160.New()
 	rh.Write(h[:])
 	ripemd160Hash := rh.Sum(nil)
-	// Step 3: Base58Check 编码（带版本字节）
+	// Step 3: Base58Check encode (with version byte)
 	return base58CheckEncode(KeyIDVer, ripemd160Hash)
 }
 
-// base58CheckEncode 对 payload 做 Base58Check 编码，version 为 1 字节版本号
+// base58CheckEncode Base58Check-encodes payload; version is a 1-byte version number
 func base58CheckEncode(version byte, payload []byte) string {
 	data := make([]byte, 0, 1+len(payload)+4)
 	data = append(data, version)

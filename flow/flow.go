@@ -1,4 +1,4 @@
-// Package flow 交易构建与广播流程；签名由外部 MPC 提供，本包负责构建待签交易单与提交广播。
+// Package flow transaction build and broadcast flow; signing is provided by external MPC; this package builds PendingSignTx and submits broadcasts.
 package flow
 
 import (
@@ -16,7 +16,7 @@ import (
 	"github.com/mailru/easyjson"
 )
 
-// GetRandomSecure 使用加密安全的随机数生成器生成指定字节数组（推荐）
+// GetRandomSecure generates a byte slice of the given length using a cryptographically secure RNG (recommended).
 func GetRandomSecure(l int) ([]byte, error) {
 	randomIV := make([]byte, l)
 	if _, err := io.ReadFull(rand.Reader, randomIV); err != nil {
@@ -25,11 +25,11 @@ func GetRandomSecure(l int) ([]byte, error) {
 	return randomIV, nil
 }
 
-// BuildTransaction 构建普通交易单：
-// 1) decoder 负责构建 rawTx（rawHex/fees/sigParts 等）
-// 2) flow 负责补充 createTime/createNonce/txType 并序列化为 JSON
-// 3) wrapper.SignPendingTxData 对 rawTx JSON 做业务侧签名，返回 PendingSignTx（含 dataSign/tradeSign）
-// 重要：PendingSignTx.Data 必须使用 originalTxJSON 副本，避免 wrapper 内部修改 txJSON 影响最终提交数据
+// BuildTransaction builds a normal transaction:
+// 1) decoder builds rawTx (rawHex/fees/sigParts, etc.)
+// 2) flow fills createTime/createNonce/txType and serializes to JSON
+// 3) wrapper.SignPendingTxData signs the rawTx JSON on the business side, returning PendingSignTx (with dataSign/tradeSign)
+// Important: PendingSignTx.Data must use a copy of originalTxJSON so wrapper-internal mutations of txJSON do not affect final submit data
 func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, rawTx *types.RawTransaction) (*types.PendingSignTx, error) {
 	if d == nil {
 		return nil, errors.New("decoder is nil")
@@ -55,7 +55,7 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	if err != nil {
 		return nil, err
 	}
-	originalTxJSON := string(txJSON) // 重要必须：获得副本可无视回调函数修改 txJSON 交易单
+	originalTxJSON := string(txJSON) // required: copy so callback mutations of txJSON do not affect the transaction payload
 
 	signData, err := wrapper.SignPendingTxData(txJSON)
 	if err != nil {
@@ -66,8 +66,8 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	return signData, nil
 }
 
-// BuildSummaryTransaction 构建汇总交易单列表（每笔可能带 Error）：
-// 由 decoder 返回 RawTransactionWithError 列表，然后逐笔补齐 nonce/time/type -> wrapper 签名 -> 生成 PendingSignTx。
+// BuildSummaryTransaction builds a list of summary transactions (each may carry Error):
+// decoder returns RawTransactionWithError list, then each entry gets nonce/time/type filled -> wrapper signs -> PendingSignTx is produced.
 func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) ([]*types.PendingSignTx, error) {
 	if d == nil {
 		return nil, errors.New("decoder is nil")
@@ -107,7 +107,7 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 		if err != nil {
 			return nil, err
 		}
-		originalTxJSON := string(txJSON) // 重要必须：获得副本可无视回调函数修改 txJSON 交易单
+		originalTxJSON := string(txJSON) // required: copy so callback mutations of txJSON do not affect the transaction payload
 
 		signData, err := wrapper.SignPendingTxData(txJSON)
 		if err != nil {
@@ -124,11 +124,11 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 	return txData, nil
 }
 
-// SendTransaction 广播交易单：
-// 1) 校验 dataSign/tradeSign 与 Data 一致，防止 Data 被篡改
-// 2) Data 反序列化 rawTx，合并 SignerList -> rawTx.Signatures
-// 3) VerifyRawTransaction 校验签名
-// 4) SubmitRawTransaction 广播
+// SendTransaction broadcasts a transaction:
+// 1) verify dataSign/tradeSign match Data to prevent tampering
+// 2) deserialize Data to rawTx, merge SignerList -> rawTx.Signatures
+// 3) VerifyRawTransaction validates signatures
+// 4) SubmitRawTransaction broadcasts
 func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pendingTx *types.PendingSignTx) (*types.Transaction, error) {
 	if d == nil {
 		return nil, errors.New("decoder is nil")
@@ -172,10 +172,10 @@ func SendTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, pen
 	return d.SubmitRawTransaction(wrapper, rawTx)
 }
 
-// BuildSmartContractTransaction 构建合约类原始交易单的 PendingSignTx（与 BuildTransaction 对称）：
+// BuildSmartContractTransaction builds PendingSignTx for a contract raw transaction (symmetric to BuildTransaction):
 // 1) SmartContractDecoder.CreateSmartContractRawTransaction
-// 2) 填充 createTime/createNonce/txType（TxType=2 表示合约写链，与 RawTransaction 的 0 单笔 / 1 汇总 区分）
-// 3) wrapper.SignPendingTxData 对序列化后的 SmartContractRawTransaction 做业务签
+// 2) fill createTime/createNonce/txType (TxType=2 means contract write; distinct from RawTransaction 0 single / 1 summary)
+// 3) wrapper.SignPendingTxData signs the serialized SmartContractRawTransaction on the business side
 func BuildSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet.WalletDAI, rawTx *types.SmartContractRawTransaction) (*types.PendingSignTx, error) {
 	if d == nil {
 		return nil, errors.New("smart contract decoder is nil")
@@ -212,8 +212,8 @@ func BuildSmartContractTransaction(d decoder.SmartContractDecoder, wrapper walle
 	return signData, nil
 }
 
-// SendSmartContractTransaction 广播合约原始交易单（与 SendTransaction 对称）：
-// 校验 dataSign/tradeSign → 反序列化 SmartContractRawTransaction → 合并 SignerList → SubmitSmartContractRawTransaction
+// SendSmartContractTransaction broadcasts a contract raw transaction (symmetric to SendTransaction):
+// verify dataSign/tradeSign -> deserialize SmartContractRawTransaction -> merge SignerList -> SubmitSmartContractRawTransaction
 func SendSmartContractTransaction(d decoder.SmartContractDecoder, wrapper wallet.WalletDAI, pendingTx *types.PendingSignTx) (*types.SmartContractReceipt, error) {
 	if d == nil {
 		return nil, errors.New("smart contract decoder is nil")

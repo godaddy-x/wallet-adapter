@@ -1,4 +1,4 @@
-// Package types 区块扫描相关数据类型
+// Package types block scanning related data types
 package types
 
 import (
@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// BlockHeader 区块头
+// BlockHeader block header
 //
 //easyjson:json
 type BlockHeader struct {
@@ -22,7 +22,7 @@ type BlockHeader struct {
 	Symbol            string `json:"symbol"`
 }
 
-// UnscanRecord 扫描失败的区块/交易记录
+// UnscanRecord failed block/transaction scan record
 //
 //easyjson:json
 type UnscanRecord struct {
@@ -33,7 +33,7 @@ type UnscanRecord struct {
 	Symbol      string `json:"symbol"`
 }
 
-// NewUnscanRecord 构造未扫记录并生成 ID
+// NewUnscanRecord constructs an unscanned record and generates ID
 func NewUnscanRecord(height uint64, txID, reason, symbol string) *UnscanRecord {
 	plain := fmt.Sprintf("%s_%d_%s", symbol, height, txID)
 	h := sha256.Sum256([]byte(plain))
@@ -46,7 +46,7 @@ func NewUnscanRecord(height uint64, txID, reason, symbol string) *UnscanRecord {
 	}
 }
 
-// Balance 地址余额
+// Balance address balance
 //
 //easyjson:json
 type Balance struct {
@@ -58,7 +58,7 @@ type Balance struct {
 	Balance          string `json:"balance"`
 }
 
-// Recharge 充值/到账记录（用于 TxInput/TxOutPut）
+// Recharge deposit/inbound record (used by TxInput/TxOutPut)
 //
 //easyjson:json
 type Recharge struct {
@@ -77,7 +77,7 @@ type Recharge struct {
 	TxType      uint64 `json:"txType"`
 }
 
-// TxInput 交易输入（出账记录）
+// TxInput transaction input (outbound record)
 //
 //easyjson:json
 type TxInput struct {
@@ -86,7 +86,7 @@ type TxInput struct {
 	Recharge    Recharge
 }
 
-// TxOutPut 交易输出（到账记录）
+// TxOutPut transaction output (inbound record)
 //
 //easyjson:json
 type TxOutPut struct {
@@ -94,7 +94,7 @@ type TxOutPut struct {
 	ExtParam string `json:"extParam"`
 }
 
-// TxExtractData 区块扫描后的交易提取结果
+// TxExtractData transaction extraction result after block scan
 //
 //easyjson:json
 type TxExtractData struct {
@@ -103,7 +103,7 @@ type TxExtractData struct {
 	Transaction *Transaction `json:"transaction"`
 }
 
-// NewTxExtractData 构造空的提取结果
+// NewTxExtractData constructs an empty extraction result
 func NewTxExtractData() *TxExtractData {
 	return &TxExtractData{
 		TxInputs:  make([]*TxInput, 0),
@@ -111,7 +111,7 @@ func NewTxExtractData() *TxExtractData {
 	}
 }
 
-// ScanTarget 扫描目标（V1，已废弃兼容用）
+// ScanTarget scan target (V1, deprecated for compatibility)
 //
 //easyjson:json
 type ScanTarget struct {
@@ -122,31 +122,31 @@ type ScanTarget struct {
 	BalanceModelType BalanceModelType
 }
 
-// 扫描目标类型：ScanTargetParam.ScanTargetType 决定 ScanTarget 集合 key 的含义
+// Scan target types: ScanTargetParam.ScanTargetType determines ScanTarget map key meaning
 const (
-	ScanTargetTypeAccountAddress  = 0 // ScanTarget = 账户地址
-	ScanTargetTypeAccountAlias    = 1 // ScanTarget = 账户别名
-	ScanTargetTypeContractAddress = 2 // ScanTarget = 合约地址
-	ScanTargetTypeContractAlias   = 3 // ScanTarget = 合约别名
-	ScanTargetTypeAddressPubKey       = 4 // ScanTarget = 地址公钥
-	ScanTargetTypeAddressMemo         = 5 // ScanTarget = 地址备注
-	ScanTargetTypeBatchSenderAddress  = 6 // ScanTarget = 我方 BatchSender 合约地址（与 ERC20 代币合约白名单分离）
+	ScanTargetTypeAccountAddress  = 0 // ScanTarget = account address
+	ScanTargetTypeAccountAlias    = 1 // ScanTarget = account alias
+	ScanTargetTypeContractAddress = 2 // ScanTarget = contract address
+	ScanTargetTypeContractAlias   = 3 // ScanTarget = contract alias
+	ScanTargetTypeAddressPubKey       = 4 // ScanTarget = address public key
+	ScanTargetTypeAddressMemo         = 5 // ScanTarget = address memo
+	ScanTargetTypeBatchSenderAddress  = 6 // ScanTarget = our BatchSender contract address (separate from ERC20 token contract whitelist)
 )
 
-// ScanTargetParam 扫描目标参数：由 ScanTargetType 区分 ScanTarget 集合中的 key 是 address / alias / 公钥 / 备注等
+// ScanTargetParam scan target parameters: ScanTargetType distinguishes whether ScanTarget keys are address / alias / public key / memo, etc.
 //
 //easyjson:json
 type ScanTargetParam struct {
-	// ScanTarget 批量目标集合：key 为目标值（地址/别名/公钥/备注）。
-	// value 为命中结果：
-	//   - nil 表示未命中
-	//   - 非 nil 表示命中（地址类型建议填 accountID string；合约类型建议填 *Coin）
+	// ScanTarget batch target map: key is target value (address/alias/public key/memo).
+	// value is hit result:
+	//   - nil means no hit
+	//   - non-nil means hit (address type: accountID string recommended; contract type: *Coin recommended)
 	ScanTarget     map[string]interface{}
 	Symbol         string
-	ScanTargetType uint64 // 见 ScanTargetType* 常量
+	ScanTargetType uint64 // see ScanTargetType* constants
 }
 
-// NewScanTargetParamForAddress 用账户地址构造扫描目标参数
+// NewScanTargetParamForAddress constructs scan target params from account address
 func NewScanTargetParamForAddress(symbol, address string) ScanTargetParam {
 	return ScanTargetParam{
 		Symbol:         symbol,
@@ -155,10 +155,10 @@ func NewScanTargetParamForAddress(symbol, address string) ScanTargetParam {
 	}
 }
 
-// NewScanTargetParamForContract 用合约地址构造扫描目标参数（用于 ERC20 合约白名单场景）
-// 业务层可通过 ScanTargetType == ScanTargetTypeContractAddress 识别“这是合约地址查询”。
-// symbol: 链符号（如 eth）
-// contractAddr: ERC20 合约地址（存到 ScanTarget 字段）
+// NewScanTargetParamForContract constructs scan target params from contract address (ERC20 contract whitelist scenario)
+// Business layer can detect contract address lookup via ScanTargetType == ScanTargetTypeContractAddress.
+// symbol: chain symbol (e.g. eth)
+// contractAddr: ERC20 contract address (stored in ScanTarget field)
 func NewScanTargetParamForContract(symbol, contractAddr string) ScanTargetParam {
 	return ScanTargetParam{
 		Symbol:         symbol,
@@ -167,8 +167,8 @@ func NewScanTargetParamForContract(symbol, contractAddr string) ScanTargetParam 
 	}
 }
 
-// NewScanTargetParamForBatchSender 用 BatchSender 合约地址构造扫描目标（主币 batchSendNativeToken 扫块入账）。
-// 业务应在部署绑定表查询 BatchSender，在代币合约配置表查询 ERC20；命中值非 nil 即可。
+// NewScanTargetParamForBatchSender constructs scan target from BatchSender contract address (native coin batchSendNativeToken block-scan crediting).
+// Business should query BatchSender from deployment binding table and ERC20 from token contract config; non-nil hit value is sufficient.
 func NewScanTargetParamForBatchSender(symbol, batchContractAddr string) ScanTargetParam {
 	return ScanTargetParam{
 		Symbol:         symbol,
@@ -177,7 +177,7 @@ func NewScanTargetParamForBatchSender(symbol, batchContractAddr string) ScanTarg
 	}
 }
 
-// NewScanTargetParamForAlias 用账户别名构造扫描目标参数
+// NewScanTargetParamForAlias constructs scan target params from account alias
 func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
 	return ScanTargetParam{
 		Symbol:         symbol,
@@ -186,7 +186,7 @@ func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
 	}
 }
 
-// ScanTargetResult 扫描目标结果
+// ScanTargetResult scan target result
 //
 //easyjson:json
 type ScanTargetResult struct {
@@ -194,7 +194,7 @@ type ScanTargetResult struct {
 	TargetInfo interface{}
 }
 
-// BlockchainSyncStatus 链同步状态
+// BlockchainSyncStatus chain sync status
 //
 //easyjson:json
 type BlockchainSyncStatus struct {
@@ -203,7 +203,7 @@ type BlockchainSyncStatus struct {
 	Syncing            bool
 }
 
-// ExtractDataItem 按 SourceKey 聚合的交易提取结果项。
+// ExtractDataItem transaction extraction result item aggregated by SourceKey.
 //
 //easyjson:json
 type ExtractDataItem struct {
@@ -211,7 +211,7 @@ type ExtractDataItem struct {
 	Data      []*TxExtractData `json:"data"`
 }
 
-// ContractReceiptItem 合约回执项。
+// ContractReceiptItem contract receipt item.
 //
 //easyjson:json
 type ContractReceiptItem struct {
@@ -219,38 +219,38 @@ type ContractReceiptItem struct {
 	Receipt *SmartContractReceipt `json:"receipt"`
 }
 
-// BlockScanResult 单次按高度扫块的结果摘要（供外部系统维护游标、重试与告警）。
-// 设计目标：扫块器不依赖内部存储（BlockchainDAI 可选），外部系统可依据该结果决定是否推进高度或重扫。
-// 注意：不同链实现可按能力填充 TxTotal/TxFailed 等字段；最低要求是 Height + Success + ErrorReason。
+// BlockScanResult single height scan result summary (for external cursor maintenance, retry, and alerts).
+// Design goal: scanner does not depend on internal storage (BlockchainDAI optional); external systems decide whether to advance height or rescan from this result.
+// Note: chain implementations may fill TxTotal/TxFailed etc. by capability; minimum is Height + Success + ErrorReason.
 //
 //easyjson:json
 type BlockScanResult struct {
 	Symbol    string `json:"symbol"`
 	Height    uint64 `json:"height"`
 	BlockHash string `json:"blockHash"`
-	// NetworkBlockHeight 为本次扫描时刻的链上最新高度（eth_blockNumber 等），便于业务侧观测进度与告警。
+	// NetworkBlockHeight chain latest height at scan time (eth_blockNumber, etc.) for progress monitoring and alerts.
 	NetworkBlockHeight uint64 `json:"networkBlockHeight"`
 	Success            bool   `json:"success"`
 	ErrorReason        string `json:"errorReason"`
 	TxTotal            uint64 `json:"txTotal"`
 	TxFailed           uint64 `json:"txFailed"`
 	ExtractedTxs       uint64 `json:"extractedTxs"`
-	// FailedTxIDs 记录部分失败交易 ID（截断），用于快速定位问题；完整失败明细由外部系统自行落库。
+	// FailedTxIDs partial failed tx IDs (truncated) for quick diagnosis; full failure details persisted externally.
 	FailedTxIDs []string `json:"failedTxIDs"`
 
-	// Header 为本次扫描对应的区块头（若能成功获取区块）。
+	// Header block header for this scan (when block fetch succeeds).
 	Header *BlockHeader `json:"header"`
-	// ExtractData 为交易提取结果列表（按 SourceKey 聚合，仅当实现方开启交易提取时填充）。
+	// ExtractData transaction extraction results aggregated by SourceKey (filled when implementation enables extraction).
 	ExtractData []*ExtractDataItem `json:"extractData"`
-	// ContractReceipts 为合约回执列表（key 字段可用于标识，如 contractAddr:logIndex）。
+	// ContractReceipts contract receipt list (key may identify, e.g. contractAddr:logIndex).
 	ContractReceipts []*ContractReceiptItem `json:"contractReceipts"`
-	// Once 标记本次扫描是否为“插队/一次性”扫描（由 ScanBlockPrioritize 触发）。
-	// 业务方可据此区分：true=插队扫描结果，false=主线 RunScanLoop 常规扫描结果。
+	// Once marks whether this scan was priority/one-shot (triggered by ScanBlockPrioritize).
+	// Business can distinguish: true=priority scan result, false=main RunScanLoop regular scan result.
 	Once bool `json:"once"`
 }
 
-// TxVerifyResult 按 txid 复核链上交易并返回“可入账结果集”的输出。
-// 设计目标：外部系统在入账前进行二次链上复核（上链归属、成功状态、确认数），并获取与扫块口径一致的提取结果集。
+// TxVerifyResult output of on-chain tx verification by txid returning creditable result set.
+// Design goal: external systems re-verify on-chain before crediting (inclusion, success, confirmations) and get extraction results consistent with block scan.
 //
 //easyjson:json
 type TxVerifyResult struct {
@@ -264,32 +264,32 @@ type TxVerifyResult struct {
 	Confirmations uint64 `json:"confirmations"`
 	Status        string `json:"status"`
 
-	// ExtractData 为交易提取结果列表（按 SourceKey 聚合）。
+	// ExtractData transaction extraction results aggregated by SourceKey.
 	ExtractData []*ExtractDataItem `json:"extractData"`
-	// ContractReceipts 为合约回执列表（key 字段可用于标识，如 txid:contractAddr:logIndex）。
+	// ContractReceipts contract receipt list (key may identify, e.g. txid:contractAddr:logIndex).
 	ContractReceipts []*ContractReceiptItem `json:"contractReceipts"`
 }
 
-// TxTransferExpected 主币/代币单条转账的期望值（用于入账前严格比对）。
+// TxTransferExpected expected single native/token transfer (for strict pre-credit comparison).
 //
 //easyjson:json
 type TxTransferExpected struct {
-	// ContractAddr 为空表示主币转账；非空表示合约代币（ERC20）转账。
+	// ContractAddr empty means native transfer; non-empty means contract token (ERC20) transfer.
 	ContractAddr string `json:"contractAddr"`
 	From         string `json:"from"`
 	To           string `json:"to"`
-	// Amount 为十进制字符串（已按 decimals 格式化后的金额），例如 "1.23"。
+	// Amount decimal string (formatted per decimals), e.g. "1.23".
 	Amount string `json:"amount"`
-	// Decimals 仅在 ContractAddr 非空时使用；若为 0 表示由实现方自行确定（不推荐，建议外部明确）。
+	// Decimals used only when ContractAddr is non-empty; 0 means implementation decides (not recommended; external should specify).
 	Decimals uint32 `json:"decimals"`
-	// OutputIndex 可选：用于唯一定位同一 tx 内的多笔记录，语义随场景变化：
-	// - EVM 合约事件：表示事件日志索引（logIndex）
-	// - UTXO 链：表示交易输出索引（vout）
-	// <0 表示不使用该字段的场景。
+	// OutputIndex optional: uniquely locates records within the same tx; semantics vary:
+	// - EVM contract events: event log index (logIndex)
+	// - UTXO chains: transaction output index (vout)
+	// <0 means do not use this field.
 	OutputIndex int64 `json:"outputIndex"`
 }
 
-// TxVerifyExpected 入账前复核所需的期望对象（外部系统准备入账的记录摘要）。
+// TxVerifyExpected expected object for pre-credit verification (external system's pending credit record summary).
 //
 //easyjson:json
 type TxVerifyExpected struct {
@@ -298,11 +298,11 @@ type TxVerifyExpected struct {
 	BlockHash string `json:"blockHash"`
 	Height    uint64 `json:"height"`
 
-	// Transfers 为期望入账的转账列表（主币与代币均可）。
+	// Transfers expected credit transfers (native and tokens).
 	Transfers []*TxTransferExpected `json:"transfers"`
 }
 
-// TxVerifyMatchResult VerifyTransactionMatch 的返回值：链上复核 + 与期望值比对的结论。
+// TxVerifyMatchResult return value of VerifyTransactionMatch: on-chain verification + comparison with expected values.
 //
 //easyjson:json
 type TxVerifyMatchResult struct {
@@ -310,14 +310,14 @@ type TxVerifyMatchResult struct {
 	Verified bool   `json:"verified"`
 	Reason   string `json:"reason"`
 
-	// Mismatches 用于返回不一致的原因列表（可直接写日志/告警）。
+	// Mismatches list of mismatch reasons (for logging/alerts).
 	Mismatches []string `json:"mismatches"`
 
-	// Chain 为链上复核与实际提取结果（便于外部定位差异）。
+	// Chain on-chain verification and actual extraction results (for external diff diagnosis).
 	Chain *TxVerifyResult `json:"chain"`
 }
 
-// SmartContractEvent 合约事件
+// SmartContractEvent contract event
 //
 //easyjson:json
 type SmartContractEvent struct {
@@ -326,7 +326,7 @@ type SmartContractEvent struct {
 	Value    string         `json:"value"`
 }
 
-// SmartContractReceipt 合约交易回执
+// SmartContractReceipt contract transaction receipt
 //
 //easyjson:json
 type SmartContractReceipt struct {
@@ -344,11 +344,11 @@ type SmartContractReceipt struct {
 	ConfirmTime int64                 `json:"confirmTime"`
 	Status      string                `json:"status"`
 	Reason      string                `json:"reason"`
-	// OutputIndex 表示该回执对应的输出序号，语义随场景变化：
-	// - EVM 链：表示事件日志索引（logIndex）
-	// - UTXO 链：表示交易输出索引（vout）
-	// 用于精确定位同一 tx 内的多笔记录。
+	// OutputIndex output index for this receipt; semantics vary:
+	// - EVM chains: event log index (logIndex)
+	// - UTXO chains: transaction output index (vout)
+	// Used to pinpoint records within the same tx.
 	OutputIndex int64 `json:"outputIndex"`
-	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation 等）。
+	// ExtParam key-value extension fields for structured extra info (e.g. contract_creation).
 	ExtParam map[string]string `json:"extParam"`
 }

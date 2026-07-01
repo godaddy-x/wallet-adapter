@@ -264,7 +264,7 @@ func TestHumanToChainUnit_DecimalZeroRejectsDot(t *testing.T) {
 }
 
 func TestStringToBigInt_FractionExactLength(t *testing.T) {
-	// 小数位恰好等于 decimal（边界内）
+	// fractional digits exactly equal decimal (within boundary)
 	in := "9." + strings.Repeat("9", 6)
 	n, err := StringToBigInt(in, 6)
 	if err != nil {

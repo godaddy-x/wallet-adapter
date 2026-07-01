@@ -1,4 +1,4 @@
-// 智能合约解析器：代币余额、ABI 调用/创建/广播、合约元数据；与 TransactionDecoder 并列，供链可选实现。
+// Smart contract decoder: token balances, ABI call/create/broadcast, contract metadata; parallel to TransactionDecoder, optional per chain.
 package decoder
 
 import (
@@ -8,30 +8,30 @@ import (
 	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
-// SmartContractDecoder 智能合约解析器接口，供支持合约的链实现（可选）。
-// 与 TransactionDecoder 并列；ChainAdapter 通过 GetSmartContractDecoder() 返回，可为 nil。
+// SmartContractDecoder smart contract decoder interface for chains that support contracts (optional).
+// Parallel to TransactionDecoder; ChainAdapter returns it via GetSmartContractDecoder(), which may be nil.
 type SmartContractDecoder interface {
 	ABIDAI
 
-	// GetTokenBalanceByAddress 查询地址代币余额列表
+	// GetTokenBalanceByAddress queries token balance list for addresses.
 	GetTokenBalanceByAddress(contract types.SmartContract, address ...string) ([]*types.TokenBalance, error)
-	// CallSmartContractABI 只读调用合约 ABI 方法，不产生链上交易
+	// CallSmartContractABI read-only ABI call; does not produce an on-chain transaction.
 	CallSmartContractABI(wrapper wallet.WalletDAI, rawTx *types.SmartContractRawTransaction) (*types.SmartContractCallResult, *types.AdapterError)
-	// CreateSmartContractRawTransaction 创建智能合约原始交易单（填充 Raw 等）
+	// CreateSmartContractRawTransaction creates a smart contract raw transaction (fills Raw, etc.).
 	CreateSmartContractRawTransaction(wrapper wallet.WalletDAI, rawTx *types.SmartContractRawTransaction) *types.AdapterError
-	// SubmitSmartContractRawTransaction 广播智能合约交易单
+	// SubmitSmartContractRawTransaction broadcasts a smart contract transaction.
 	SubmitSmartContractRawTransaction(wrapper wallet.WalletDAI, rawTx *types.SmartContractRawTransaction) (*types.SmartContractReceipt, *types.AdapterError)
-	// GetTokenMetadata 根据合约地址查询代币元数据
+	// GetTokenMetadata queries token metadata by contract address.
 	GetTokenMetadata(contract string) (*types.SmartContract, error)
 }
 
-// ABIDAI ABI 数据访问接口，供 SmartContractDecoder 嵌入
+// ABIDAI ABI data access interface, embedded by SmartContractDecoder.
 type ABIDAI interface {
 	GetABIInfo(address string) (*types.ABIInfo, error)
 	SetABIInfo(address string, abi types.ABIInfo) error
 }
 
-// SmartContractDecoderBase 默认未实现基类
+// SmartContractDecoderBase default not-implemented base class.
 type SmartContractDecoderBase struct{}
 
 func (SmartContractDecoderBase) GetTokenBalanceByAddress(contract types.SmartContract, address ...string) ([]*types.TokenBalance, error) {

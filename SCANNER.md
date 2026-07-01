@@ -1,212 +1,203 @@
-### `scanner` 扫块器设计文档
+# Block scanner design (`scanner` package)
 
-`scanner` 包提供一套可复用的**区块扫描框架**，用于从多条链上扫描新区块、提取交易/合约回执，并通过同步回调返回扫描结果。
-
----
-
-## 1. 角色与职责
-
-- **BlockScanner 接口**  
-  抽象"一条链的扫块能力"，包括：
-  - 按高度扫块（`ScanBlockWithResult`、`ScanBlockOnce`）
-  - 持续扫块循环（`RunScanLoop`，参数使用 `ScanLoopParams` 结构体，便于扩展）
-  - 插队扫描（`ScanBlockPrioritize`）
-  - 游标重置（`ResetScanHeight`）
-  - 交易 / 合约回执提取
-  - 地址余额查询（`GetBalanceByAddress`）
-  - 入账前复核（`VerifyTransactionByTxID`、`VerifyTransactionMatch`）
-  - 注入扫描目标函数
-
-- **Base 基类** (`scanner.Base`)  
-  提供**基础注入与默认未实现方法**：
-  - `ScanTargetFunc` 注入（扫描目标查询）
-  - 所有 `BlockScanner` 接口方法的默认"未实现"返回
-
-  每条链的扫块实现嵌入 `*scanner.Base`，按需重写接口方法。
-
-- **types/block.go 中的扫块相关类型**
-  - `BlockHeader`：区块头
-  - `TxExtractData`：交易提取结果
-  - `ExtractDataItem`：按 SourceKey 聚合的交易提取结果项
-  - `ContractReceiptItem`：合约回执项
-  - `SmartContractReceipt` / `SmartContractEvent`：合约回执与事件
-  - `ScanTargetParam`：扫描目标查询
-  - `BlockScanResult` / `TxVerifyResult` / `TxVerifyMatchResult`：扫块与复核结果
+The `scanner` package provides a reusable **block scanning framework** for scanning new blocks on multiple chains, extracting transactions/contract receipts, and returning results via synchronous callbacks.
 
 ---
 
-## 2. BlockScanner 核心接口
+## 1. Roles and responsibilities
+
+- **`BlockScanner` interface**  
+  Abstracts per-chain scanning:
+  - Scan by height (`ScanBlockWithResult`, `ScanBlockOnce`)
+  - Continuous scan loop (`RunScanLoop` with `ScanLoopParams` for extensibility)
+  - Priority catch-up (`ScanBlockPrioritize`)
+  - Cursor reset (`ResetScanHeight`)
+  - Transaction / contract receipt extraction
+  - Address balance lookup (`GetBalanceByAddress`)
+  - Pre-credit verification (`VerifyTransactionByTxID`, `VerifyTransactionMatch`)
+  - Scan target function injection
+
+- **`Base` (`scanner.Base`)**  
+  Provides **injection and default “not implemented” stubs**:
+  - `ScanTargetFunc` injection
+  - Default “not implemented” for all `BlockScanner` methods
+
+  Each chain embeds `*scanner.Base` and overrides methods as needed.
+
+- **Scan-related types in `types/block.go`**
+  - `BlockHeader`
+  - `TxExtractData`
+  - `ExtractDataItem` (aggregated by `SourceKey`)
+  - `ContractReceiptItem`
+  - `SmartContractReceipt` / `SmartContractEvent`
+  - `ScanTargetParam`
+  - `BlockScanResult` / `TxVerifyResult` / `TxVerifyMatchResult`
+
+---
+
+## 2. Core `BlockScanner` interface
 
 ```go
 type BlockScanner interface {
-    // 扫描目标：根据地址/别名/公钥等筛选业务关心的交易
+    // Scan targets: filter business-relevant txs by address/alias/pubkey etc.
     SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
 
-    // 运行控制：启动/停止内部扫描任务
+    // Run control: start/stop internal scan task
     Run() error
     Pause() error
 
-    // ScanBlockWithResult 按高度扫描区块并返回摘要结果，供外部系统推进游标与重试
+    // ScanBlockWithResult scans one height and returns summary for cursor advance / retry
     ScanBlockWithResult(height uint64) (*types.BlockScanResult, error)
-    // ScanBlockOnce 指定高度扫描一次（用于补扫/漏扫修复），不进入持续循环
+    // ScanBlockOnce scans one height once (catch-up / gap repair), not part of continuous loop
     ScanBlockOnce(height uint64) (*types.BlockScanResult, error)
 
-    // ResetScanHeight 将持续扫块循环的起始高度重置到指定值（用于回滚重扫）
+    // ResetScanHeight resets continuous loop start height (re-scan from rollback point)
     ResetScanHeight(height uint64) error
 
-    // 状态查询
+    // Status
     GetCurrentBlockHeader() (*types.BlockHeader, error)
     GetGlobalMaxBlockHeight() uint64
 
-    // 交易 / 回执提取
+    // Transaction / receipt extraction
     ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
-    // GetBalanceByAddress 查询指定地址的余额
+    // GetBalanceByAddress queries balances for given addresses
     GetBalanceByAddress(address ...string) ([]*types.Balance, error)
 
-    // VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集
+    // VerifyTransactionByTxID re-verifies on-chain result by txid before crediting
     VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
 
-    // VerifyTransactionMatch 入账前对链上结果集做二次复核，并与外部期望对象严格比对
+    // VerifyTransactionMatch re-verifies on-chain set and strictly compares with external expectation
     VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
-    // RunScanLoop 按高度持续扫描区块，回调每个高度的扫描结果给外部系统
-    // 参数使用 ScanLoopParams 结构体，后续添加新字段无需修改方法签名
+    // RunScanLoop continuously scans by height; callbacks per height via params.HandleBlock
+    // ScanLoopParams allows new fields without changing the method signature
     RunScanLoop(params ScanLoopParams) error
 
-    // ScanBlockPrioritize 插队扫描指定高度列表（用于补扫/漏扫紧急修复）。
-    // 说明：插队高度在 RunScanLoop 主线扫描间隙优先处理，结果通过 params.HandleBlock 回调。
+    // ScanBlockPrioritize priority-scans given heights (urgent catch-up).
+    // Priority heights are handled between main-loop scans in RunScanLoop; results via params.HandleBlock.
     ScanBlockPrioritize(heights []uint64) error
 }
 
-// ScanLoopParams RunScanLoop 的参数结构体
-// 后续添加新参数无需修改方法签名，直接在此结构体添加字段即可
+// ScanLoopParams parameters for RunScanLoop
 type ScanLoopParams struct {
-    StartHeight    uint64                           // 起始扫描高度，从 StartHeight+1 开始扫描
-    Confirmations  uint64                           // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
-    Interval       time.Duration                    // 每轮扫描后的休眠间隔
-    HandleBlock    func(res *types.BlockScanResult) // 每扫完一个高度的回调函数（可为 nil）
+    StartHeight    uint64                           // loop starts from StartHeight+1
+    Confirmations  uint64                           // used only for BlockHeader.Confirmations hint
+    Interval       time.Duration                    // sleep between rounds
+    HandleBlock    func(res *types.BlockScanResult) // per-height callback (may be nil)
 }
 ```
 
-每条链实现自己的 `BlockScanner`，建议模式：
+Recommended pattern per chain:
 
 ```go
 type MyChainScanner struct {
     *scanner.Base
-    // ... 链特有字段（RPC 客户端等）
+    // ... chain-specific fields (RPC client, etc.)
 }
 
 func NewMyChainScanner() *MyChainScanner {
     return &MyChainScanner{Base: scanner.NewBlockScannerBase()}
 }
 
-// 按需重写 BlockScanner 接口方法
 func (s *MyChainScanner) ScanBlockWithResult(height uint64) (*types.BlockScanResult, error) {
-    // 1. 从节点获取区块
-    // 2. 解析交易/回执
-    // 3. 过滤业务关心的目标
-    // 4. 返回 BlockScanResult
+    // 1. Fetch block from node
+    // 2. Parse txs/receipts
+    // 3. Filter business targets
+    // 4. Return BlockScanResult
 }
 ```
 
 ---
 
-## 3. 扫描目标与合约元数据
+## 3. Scan targets and contract metadata
 
-### 3.1 扫描目标函数
+### 3.1 Scan target function
 
 ```go
-// BlockScanTargetFunc 批量查询扫描目标所属信息，供扫块时过滤交易。
-// 调用方会传入单个批次参数（同 Symbol + ScanTargetType），回调在对象上原地填充结果：
-//   - 命中目标：ScanTarget[target] 写入非 nil 值（地址建议写 accountID string，合约建议写 *types.Coin）
-//   - 未命中目标：保持 ScanTarget[target]=nil
+// BlockScanTargetFunc batch-queries scan targets for filtering during scan.
+// Caller passes one batch (same Symbol + ScanTargetType); callback fills results in place:
+//   - hit: ScanTarget[target] = non-nil (address → accountID string; contract → *types.Coin)
+//   - miss: ScanTarget[target] remains nil
 type BlockScanTargetFunc func(target *types.ScanTargetParam) error
 ```
 
-- `ScanTargetParam` 描述"想要关注什么"：
-  - `Symbol`：链标识
-  - `ScanTarget`：目标集合（`map[string]interface{}`），key 为地址/别名/合约地址/公钥/备注，value 为命中结果（`nil` 未命中，非 `nil` 命中）
-  - `ScanTargetType`：类型枚举
+- `ScanTargetParam` describes what to watch:
+  - `Symbol`: chain id
+  - `ScanTarget`: `map[string]interface{}` — keys are address/alias/contract/pubkey/memo; values are hit results (`nil` = miss)
+  - `ScanTargetType`: type enum
 
-- 命中值约定：
-  - 地址目标：写入 `accountID string`
-  - 合约目标：写入 `*types.Coin`（`IsContract=true` 且包含完整 `Contract` 元数据）
+- Hit value conventions:
+  - Address target: `accountID string`
+  - Contract target: `*types.Coin` (`IsContract=true` with full `Contract` metadata)
 
-在扫描每笔交易时，链实现可通过注入的 `ScanTargetFunc` 进行过滤。
+Chain implementations filter each tx using the injected `ScanTargetFunc`.
 
-### 3.2 合约元数据返回方式
+### 3.2 Contract metadata
 
-- 合约场景建议在 `ScanTargetFunc` 中，当 `ScanTargetType == ScanTargetTypeContractAddress` 时，
-  直接写入 `*types.Coin`（或 `types.Coin`）。
-- 链实现会直接读取 `Coin.Contract` 填充交易中的合约信息。
-- **ERC20 代币合约**（`ScanTargetTypeContractAddress`）：查业务侧 **代币合约配置**，命中值写 `*types.Coin`（含 `decimals`）。
-- **BatchSender 批量合约**（`ScanTargetTypeBatchSenderAddress`）：查业务侧 **已确认部署绑定**（`category=batch_transfer`），与代币配置分离；命中值写非 nil（如 `true`、部署记录指针）。
-- 两类合约**不要混在同一张表、同一个 ScanTargetType 里**；链适配器按 `ScanTargetType` 分流，不用 `Protocol` 区分表来源。
+- For contracts, when `ScanTargetType == ScanTargetTypeContractAddress`, write `*types.Coin` (or `types.Coin`) in `ScanTargetFunc`.
+- The chain implementation reads `Coin.Contract` into the transaction.
+- **ERC20 token contracts** (`ScanTargetTypeContractAddress`): lookup **token contract config** on the business side; hit value is `*types.Coin` (including `decimals`).
+- **BatchSender batch contracts** (`ScanTargetTypeBatchSenderAddress`): lookup **confirmed deployment binding** (`category=batch_transfer`), separate from token config; hit value is non-nil (e.g. `true` or deployment record pointer).
+- Do **not** mix the two contract kinds in one table or `ScanTargetType`; chain adapters branch on `ScanTargetType`, not `Protocol`.
 
 ---
 
-## 4. Base 基类行为
+## 4. `Base` behavior
 
-`scanner.Base` 主要职责：
+`scanner.Base` mainly:
 
-- 提供 `ScanTargetFunc` 的注入方法
-- 为所有 `BlockScanner` 接口方法提供默认"未实现"返回
-- 提供 `Run` / `Pause` / `Stop` / `Restart` 运行控制方法
-- 提供 `QueryBalancesConcurrent` 辅助函数，用于并发查询地址余额
+- Injects `ScanTargetFunc`
+- Default “not implemented” for all `BlockScanner` methods
+- Provides `Run` / `Pause` / `Stop` / `Restart`
+- Provides `QueryBalancesConcurrent` for concurrent balance queries
 
-链实现嵌入 `*scanner.Base` 后，按需重写需要的方法即可。
+Embed `*scanner.Base` and override only what you need.
 
-### 4.1 使用 QueryBalancesConcurrent 实现 GetBalanceByAddress
+### 4.1 Implementing `GetBalanceByAddress` with `QueryBalancesConcurrent`
 
 ```go
-// GetBalanceByAddress 并发查询多个地址余额
 func (bs *MyChainScanner) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {
-    // 定义查询函数：查询单个地址的已确认、未确认、总余额
     queryFunc := func(addr string) (confirmed, unconfirmed, total string, err error) {
-        // 调用链 RPC 查询余额
         balanceConfirmed, err := bs.GetAddrBalanceFromNode(addr, "latest")
         if err != nil {
             return "", "", "", err
         }
-        
-        // pending 状态包含未确认的交易
+
         balanceAll, err := bs.GetAddrBalanceFromNode(addr, "pending")
         if err != nil {
             balanceAll = balanceConfirmed
         }
-        
-        // 计算未确认余额
+
         unconfirmedBI := new(big.Int).Sub(balanceAll, balanceConfirmed)
-        
-        return 
-            ConvertToDecimal(balanceConfirmed),  // confirmed
-            ConvertToDecimal(unconfirmedBI),     // unconfirmed
-            ConvertToDecimal(balanceAll),        // total
+
+        return
+            ConvertToDecimal(balanceConfirmed),
+            ConvertToDecimal(unconfirmedBI),
+            ConvertToDecimal(balanceAll),
             nil
     }
-    
-    // 使用 Base 提供的并发查询辅助函数
+
     return bs.QueryBalancesConcurrent(bs.Symbol(), address, queryFunc, 20)
 }
 ```
 
 ---
 
-## 5. 接入新链的扫块实现步骤
+## 5. Adding block scanning for a new chain
 
-1. **实现 `BlockScanner`**
-   - 定义结构体，嵌入 `*scanner.Base`
-   - 重写 `ScanBlockWithResult`：按高度扫描区块、解析交易/回执、过滤目标、返回结果
-   - 重写 `ScanBlockOnce`：单高度补扫逻辑（可复用 `ScanBlockWithResult`）
-   - 重写 `RunScanLoop`：持续扫块循环（或在外部实现循环逻辑）
-   - 重写 `ScanBlockPrioritize`：插队扫描指定高度（可选，默认返回未实现错误）
-   - 重写 `VerifyTransactionByTxID` / `VerifyTransactionMatch`：入账前复核
-   - 重写 `GetCurrentBlockHeader` / `GetGlobalMaxBlockHeight`：状态查询
-   - 重写 `GetBalanceByAddress`：查询地址余额（使用 `QueryBalancesConcurrent` 辅助函数）
+1. **Implement `BlockScanner`**
+   - Struct embedding `*scanner.Base`
+   - Override `ScanBlockWithResult`: fetch block, parse txs/receipts, filter targets, return result
+   - Override `ScanBlockOnce`: single-height catch-up (can delegate to `ScanBlockWithResult`)
+   - Override `RunScanLoop`: continuous loop (or implement loop externally)
+   - Override `ScanBlockPrioritize`: optional priority heights (default returns not implemented)
+   - Override `VerifyTransactionByTxID` / `VerifyTransactionMatch`: pre-credit verification
+   - Override `GetCurrentBlockHeader` / `GetGlobalMaxBlockHeight`: status
+   - Override `GetBalanceByAddress`: use `QueryBalancesConcurrent` if helpful
 
-2. **注入依赖**
-   - 调用 `SetBlockScanTargetFunc` 注入批量扫描目标查询函数（推荐在一次回调内完成批量 DB 查询并原地回填）
+2. **Inject dependencies**
+   - Call `SetBlockScanTargetFunc` with batch DB lookup that fills `ScanTarget` in place
 
-3. **在链适配器中挂载**
-   - 在 `chain.Adapter` 实现中，`GetBlockScanner()` 返回该链的 `BlockScanner` 实例
+3. **Wire into chain adapter**
+   - `GetBlockScanner()` on `ChainAdapter` returns the chain’s `BlockScanner` instance

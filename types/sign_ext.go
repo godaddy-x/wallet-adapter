@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// SignExt 标准 key：链 adapter 建单时写入 signExt JSON，CLI 签前校验使用。
+// SignExt standard keys: chain adapter writes signExt JSON at build time; CLI uses for pre-sign verification.
 const (
 	SignExtKeyChainID           = "chainId"
 	SignExtKeySignScheme        = "signScheme"
@@ -22,7 +22,7 @@ const (
 	SignExtHashKeccak256    = "keccak256"
 )
 
-// BuildSignExtJSON 将键值对序列化为 signExt JSON 字符串。
+// BuildSignExtJSON serializes key-value pairs to a signExt JSON string.
 func BuildSignExtJSON(fields map[string]string) (string, error) {
 	if len(fields) == 0 {
 		return "", fmt.Errorf("signExt fields is empty")
@@ -34,7 +34,7 @@ func BuildSignExtJSON(fields map[string]string) (string, error) {
 	return string(b), nil
 }
 
-// ParseSignExt 解析 signExt JSON 为 map。
+// ParseSignExt parses signExt JSON into a map.
 func ParseSignExt(signExt string) (map[string]string, error) {
 	signExt = strings.TrimSpace(signExt)
 	if signExt == "" {
@@ -47,7 +47,7 @@ func ParseSignExt(signExt string) (map[string]string, error) {
 	return out, nil
 }
 
-// SignExtChainID 从 signExt map 读取 chainId（十进制字符串）。
+// SignExtChainID reads chainId from signExt map (decimal string).
 func SignExtChainID(ext map[string]string) (uint64, error) {
 	if ext == nil {
 		return 0, fmt.Errorf("signExt map is nil")
@@ -63,7 +63,7 @@ func SignExtChainID(ext map[string]string) (uint64, error) {
 	return chainID, nil
 }
 
-// SignExtScheme 返回 signScheme，缺省为空字符串。
+// SignExtScheme returns signScheme; defaults to empty string.
 func SignExtScheme(ext map[string]string) string {
 	if ext == nil {
 		return ""

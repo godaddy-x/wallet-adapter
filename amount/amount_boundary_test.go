@@ -21,7 +21,7 @@ func TestStringToBigInt_DecimalBoundaries(t *testing.T) {
 		t.Fatal("decimal above MaxDecimal should error")
 	}
 
-	// decimal=0：仅整数
+	// decimal=0: integers only
 	n, err := StringToBigInt("42", 0)
 	if err != nil || n.String() != "42" {
 		t.Fatalf("decimal=0 integer: got %v %v", n, err)
@@ -30,7 +30,7 @@ func TestStringToBigInt_DecimalBoundaries(t *testing.T) {
 		t.Fatal("decimal=0 with fraction should error (overflow)")
 	}
 
-	// decimal=MaxDecimal：小数位恰好顶满
+	// decimal=MaxDecimal: fractional digits exactly at limit
 	frac := repeatChar('9', int(MaxDecimal))
 	in := "1." + frac
 	n, err = StringToBigInt(in, MaxDecimal)
@@ -42,13 +42,13 @@ func TestStringToBigInt_DecimalBoundaries(t *testing.T) {
 		t.Fatalf("got %s want %s", n, want)
 	}
 
-	// 小数位 = decimal+1 应拒绝
+	// fractional digits = decimal+1 should be rejected
 	over := "0." + repeatChar('1', int(MaxDecimal)+1)
 	if _, err = StringToBigInt(over, MaxDecimal); err == nil {
 		t.Fatal("fraction len > decimal should error")
 	}
 
-	// 小数位恰好 = decimal（非 MaxDecimal 场景）
+	// fractional digits exactly = decimal (non-MaxDecimal case)
 	in18 := "0." + repeatChar('1', 18)
 	n, err = StringToBigInt(in18, 18)
 	if err != nil {
@@ -111,20 +111,20 @@ func TestBigIntToDecimal_DecimalBoundaries(t *testing.T) {
 		t.Fatalf("decimal=0: got %q err=%v", got, err)
 	}
 
-	// rem 需左侧补零：1 wei @ 18
+	// rem needs left padding: 1 wei @ 18
 	got, err = BigIntToDecimal(big.NewInt(1), 18)
 	if err != nil || got != "0.000000000000000001" {
 		t.Fatalf("smallest display @18: got %q err=%v", got, err)
 	}
 
-	// 整除无余数
+	// exact division, no remainder
 	oneEth, _ := new(big.Int).SetString("1000000000000000000", 10)
 	got, err = BigIntToDecimal(oneEth, 18)
 	if err != nil || got != "1" {
 		t.Fatalf("exact whole: got %q err=%v", got, err)
 	}
 
-	// MaxDecimal 最小非零单位（链上 1）
+	// MaxDecimal smallest non-zero unit (on-chain 1)
 	got, err = BigIntToDecimal(big.NewInt(1), MaxDecimal)
 	want := "0." + repeatChar('0', int(MaxDecimal)-1) + "1"
 	if err != nil || got != want {
@@ -133,7 +133,7 @@ func TestBigIntToDecimal_DecimalBoundaries(t *testing.T) {
 }
 
 func TestBigIntToDecimal_LargeIntegerPart(t *testing.T) {
-	// 链上值 = 10*10^78 + 10^77（可读 10.1 @ decimal 78）
+	// on-chain value = 10*10^78 + 10^77 (human-readable 10.1 @ decimal 78)
 	divisor, err := pow10(MaxDecimal)
 	if err != nil {
 		t.Fatal(err)

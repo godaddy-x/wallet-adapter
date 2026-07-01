@@ -1,5 +1,5 @@
-// 统一导出：types/wallet/decoder/config/chain/flow/scanner 的类型与函数，便于 import "github.com/godaddy-x/wallet-adapter" 一站式使用。
-// config 包（Configer、JSON 解析）需单独 import "github.com/godaddy-x/wallet-adapter/config" 使用，供 LoadAssetsConfig 等复用。
+// Unified exports: types, functions from types/wallet/decoder/config/chain/flow/scanner for one-stop import "github.com/godaddy-x/wallet-adapter".
+// The config package (Configer, JSON parsing) must be imported separately via "github.com/godaddy-x/wallet-adapter/config" for LoadAssetsConfig and similar reuse.
 package adapter
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
-// ----- types 导出 -----
+// ----- types exports -----
 type (
 	Coin                    = types.Coin
 	SmartContract           = types.SmartContract
@@ -33,7 +33,7 @@ type (
 	SymbolInfo              = types.SymbolInfo
 	SymbolInfoBase          = types.SymbolInfoBase
 	BalanceModelType        = types.BalanceModelType
-	// 扫块相关
+	// block scanning
 	BlockHeader            = types.BlockHeader
 	UnscanRecord           = types.UnscanRecord
 	Balance                = types.Balance
@@ -53,7 +53,7 @@ type (
 	BatchRawRequest        = types.BatchRawRequest
 	BatchTransferRecipient = types.BatchTransferRecipient
 	SpeedUp                = types.SpeedUp
-	// 智能合约解析相关
+	// smart contract decoding
 	TokenBalance                = types.TokenBalance
 	SmartContractRawTransaction = types.SmartContractRawTransaction
 	SmartContractCallResult     = types.SmartContractCallResult
@@ -72,7 +72,7 @@ const (
 	ScanTargetTypeAddressPubKey      = types.ScanTargetTypeAddressPubKey
 	ScanTargetTypeAddressMemo        = types.ScanTargetTypeAddressMemo
 	ScanTargetTypeBatchSenderAddress = types.ScanTargetTypeBatchSenderAddress
-	// 智能合约 Raw 类型
+	// smart contract Raw types
 	TxRawTypeHex                         = types.TxRawTypeHex
 	TxRawTypeJSON                        = types.TxRawTypeJSON
 	TxRawTypeBase64                      = types.TxRawTypeBase64
@@ -82,7 +82,7 @@ const (
 	SmartContractProtocolBatchSender     = types.SmartContractProtocolBatchSender
 )
 
-// 错误码
+// error codes
 const (
 	ErrInsufficientBalanceOfAccount      = types.ErrInsufficientBalanceOfAccount
 	ErrInsufficientBalanceOfAddress      = types.ErrInsufficientBalanceOfAddress
@@ -121,7 +121,7 @@ func NewScanTargetParamForAlias(symbol, alias string) ScanTargetParam {
 	return types.NewScanTargetParamForAlias(symbol, alias)
 }
 
-// ----- decoder 导出 -----
+// ----- decoder exports -----
 type TransactionDecoder = decoder.TransactionDecoder
 type TransactionDecoderBase = decoder.TransactionDecoderBase
 type AddressDecoder = decoder.AddressDecoder
@@ -130,7 +130,7 @@ type SmartContractDecoder = decoder.SmartContractDecoder
 type SmartContractDecoderBase = decoder.SmartContractDecoderBase
 type ABIDAI = decoder.ABIDAI
 
-// ----- chain 导出 -----
+// ----- chain exports -----
 type ChainAdapter = chain.ChainAdapter
 type ChainAdapterBase = chain.ChainAdapterBase
 type AssetsConfig = chain.AssetsConfig
@@ -148,7 +148,7 @@ func GetSmartContractDecoder(symbol string) (SmartContractDecoder, error) {
 }
 func ListSymbols() []string { return chain.ListSymbols() }
 
-// ----- scanner 导出 -----
+// ----- scanner exports -----
 type BlockScanner = scanner.BlockScanner
 type BlockScannerBase = scanner.Base
 type BlockScanTargetFunc = scanner.BlockScanTargetFunc
@@ -156,7 +156,7 @@ type BalanceQueryFunc = scanner.BalanceQueryFunc
 
 var NewBlockScannerBase = scanner.NewBlockScannerBase
 
-// ----- flow 导出 -----
+// ----- flow exports -----
 func BuildTransaction(d TransactionDecoder, wrapper WalletDAI, rawTx *RawTransaction) (*PendingSignTx, error) {
 	return flow.BuildTransaction(d, wrapper, rawTx)
 }
@@ -174,7 +174,7 @@ func SendSmartContractTransaction(d SmartContractDecoder, wrapper WalletDAI, pen
 }
 func GetRandomSecure(l int) ([]byte, error) { return flow.GetRandomSecure(l) }
 
-// ----- amount 导出（推荐子包 import "github.com/godaddy-x/wallet-adapter/amount"，亦可使用下列包装函数） -----
+// ----- amount exports (prefer subpackage import "github.com/godaddy-x/wallet-adapter/amount"; wrapper functions below are also available) -----
 
 func AmountStringToBigInt(amountStr string, decimal int32) (*big.Int, error) {
 	return amount.StringToBigInt(amountStr, int64(decimal))

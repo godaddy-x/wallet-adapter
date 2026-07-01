@@ -1,4 +1,4 @@
-// Package scanner 区块扫描器接口与基类，负责按高度扫描区块、提取交易/回执并返回结果。
+// Package scanner block scanner interface and base class; scans blocks by height, extracts transactions/receipts, and returns results.
 package scanner
 
 import (
@@ -9,79 +9,79 @@ import (
 	"github.com/godaddy-x/wallet-adapter/types"
 )
 
-// BlockScanTargetFunc 批量查询扫描目标所属信息，供扫块时过滤交易。
-// 调用方会传入单个批次参数（同 Symbol + ScanTargetType），回调在对象上原地填充结果：
-//   - 命中目标：ScanTarget[target] 写入非 nil 值（地址类型建议写 accountID string；合约类型建议写 *types.Coin）
-//   - 未命中目标：ScanTarget[target] 保持 nil
+// BlockScanTargetFunc batch lookup of scan target ownership, used to filter transactions during block scan.
+// Caller passes a single batch param (same Symbol + ScanTargetType); callback fills results in place on the object:
+//   - hit target: ScanTarget[target] gets non-nil value (address type: accountID string recommended; contract type: *types.Coin recommended)
+//   - miss: ScanTarget[target] stays nil
 type BlockScanTargetFunc func(target *types.ScanTargetParam) error
 
-// ScanLoopParams RunScanLoop 的参数结构体，后续添加新参数无需修改方法签名。
+// ScanLoopParams parameter struct for RunScanLoop; new params can be added without changing method signature.
 type ScanLoopParams struct {
-	StartHeight   uint64                           // 起始扫描高度，从 StartHeight+1 开始扫描
-	Confirmations uint64                           // 确认数，仅用于计算 BlockHeader.Confirmations 供业务层参考
-	Interval      time.Duration                    // 每轮扫描后的休眠间隔
-	HandleBlock   func(res *types.BlockScanResult) // 每扫完一个高度的回调函数（可为 nil）
+	StartHeight   uint64                           // start scan height; scanning begins at StartHeight+1
+	Confirmations uint64                           // confirmation count; only used to compute BlockHeader.Confirmations for business reference
+	Interval      time.Duration                    // sleep interval after each scan round
+	HandleBlock   func(res *types.BlockScanResult) // callback after each height is scanned (may be nil)
 }
 
-// BlockScanner 区块扫描器核心接口：
-// - 扫块：按高度扫描区块（同步返回结果或仅返回 error）
-// - 复核：按 txid 二次链上复核，并可与业务期望严格比对
-// - 持续扫描：以“外部系统维护游标”为前提，回调输出每个高度的扫描结果
+// BlockScanner core block scanner interface:
+// - scan: scan blocks by height (sync result or error only)
+// - verify: second on-chain verification by txid, with strict comparison against business expectations
+// - continuous scan: assumes external system maintains cursor; callbacks emit each height's scan result
 //
-// 说明：
-// - 不包含内部持久化（DAI）与业务查询类能力（余额/地址交易等），这些应由外部系统或独立组件负责。
+// Notes:
+// - Does not include internal persistence (DAI) or business query capabilities (balance/address transactions, etc.); those belong to external systems or separate components.
 type BlockScanner interface {
 	SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
 
-	// 运行控制：启动/停止内部扫描任务。
+	// Run control: start/stop internal scan task.
 	Run() error
 	Pause() error
 
-	// ScanBlockWithResult 按高度扫描区块并返回摘要结果，供外部系统推进游标与重试。
-	// 约定：error 用于表达“无法完成该高度扫描”（如 RPC 失败/块不存在等）；result.Success 表达业务语义上的成功与否。
+	// ScanBlockWithResult scans a block by height and returns summary result for external cursor advance and retry.
+	// Convention: error means "cannot complete scan at this height" (RPC failure, block missing, etc.); result.Success expresses business success/failure.
 	ScanBlockWithResult(height uint64) (*types.BlockScanResult, error)
-	// ScanBlockOnce 指定高度扫描一次（用于补扫/漏扫修复），不进入持续循环、不维护外部游标。
+	// ScanBlockOnce scans a height once (for backfill/missed-block repair); no continuous loop or external cursor maintenance.
 	ScanBlockOnce(height uint64) (*types.BlockScanResult, error)
 
-	// ResetScanHeight 将“持续扫块循环”的起始高度重置到指定值（用于后台指令修正游标/回滚重扫）。
-	// 约定：该方法只影响正在运行的 RunScanLoop（若实现方支持），不应引起进程重启。
+	// ResetScanHeight resets continuous scan loop start height (for admin cursor correction/rollback rescan).
+	// Convention: only affects running RunScanLoop (if supported); must not restart the process.
 	ResetScanHeight(height uint64) error
 
 	GetCurrentBlockHeader() (*types.BlockHeader, error)
-	// GetBlockHash 轻量查询指定高度的区块 hash（eth_getBlockByNumber/full=false 等），供确认阶段校验 newly 是否仍有效。
+	// GetBlockHash lightweight block hash query at height (eth_getBlockByNumber/full=false, etc.) for confirmation-stage newly validity check.
 	GetBlockHash(height uint64) (string, error)
 	GetGlobalMaxBlockHeight() uint64
 	ExtractTransactionAndReceiptData(txid string, scanTargetFunc BlockScanTargetFunc) ([]*types.ExtractDataItem, []*types.ContractReceiptItem, error)
 
-	// GetBalanceByAddress 查询指定地址的余额。
+	// GetBalanceByAddress queries balance for addresses.
 	GetBalanceByAddress(address ...string) ([]*types.Balance, error)
 
-	// VerifyTransactionByTxID 入账前按 txid 二次复核链上结果并返回可入账结果集。
-	// 约定：error 用于表达“RPC/系统错误导致无法完成复核”；业务层面的不通过以 result.Verified=false + Reason 表达。
+	// VerifyTransactionByTxID pre-credit second on-chain verification by txid returning creditable result set.
+	// Convention: error means RPC/system failure preventing verification; business rejection via result.Verified=false + Reason.
 	VerifyTransactionByTxID(txid string, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyResult, error)
 
-	// VerifyTransactionMatch 入账前对链上结果集做二次复核，并与外部期望对象 expected 严格比对。
-	// 约定：error 表达系统/RPC 异常；业务不通过以 result.Verified=false + Reason/Mismatches 表达。
+	// VerifyTransactionMatch pre-credit second verification of on-chain results with strict comparison against external expected.
+	// Convention: error for system/RPC faults; business rejection via result.Verified=false + Reason/Mismatches.
 	VerifyTransactionMatch(txid string, expected *types.TxVerifyExpected, scanTargetFunc BlockScanTargetFunc, minConfirmations uint64) (*types.TxVerifyMatchResult, error)
 
-	// RunScanLoop 按高度持续扫描区块：
-	// - 从 params.StartHeight+1 开始，串行向上扫描；
-	// - 直接扫描至 latest（链上最新高度），不再减去 Confirmations；
-	// - Confirmations 仅用于计算 BlockHeader.Confirmations 字段供业务层参考；
-	// - 每个高度只扫描一次，不会重复扫描，节省资源；
-	// - 每扫完一个高度调用 params.HandleBlock（若非空）将 ScanBlockWithResult 的结果同步回调给外部系统；
-	// - 每轮结束后 sleep Interval 再次循环。
-	// 该方法只负责生产候选结果，入账/确认/重试策略由外部系统基于回调结果与 Verify 接口自行决定。
+	// RunScanLoop continuously scans blocks by height:
+	// - starts at params.StartHeight+1, scans upward serially;
+	// - scans through latest (chain tip), no longer subtracting Confirmations;
+	// - Confirmations only used for BlockHeader.Confirmations field for business reference;
+	// - each height scanned once, no duplicate scans to save resources;
+	// - after each height, calls params.HandleBlock (if non-nil) to callback ScanBlockWithResult to external system;
+	// - sleeps Interval after each round then loops.
+	// This method only produces candidate results; credit/confirm/retry policy decided externally via callbacks and Verify APIs.
 	RunScanLoop(params ScanLoopParams) error
 
-	// ScanBlockPrioritize 插队扫描指定高度列表。
-	// 说明：
-	// - 将插队高度加入优先队列，RunScanLoop 会在主线扫描间隙优先处理这些高度；
-	// - 插队高度的扫描结果复用 RunScanLoop 的 params.HandleBlock（如果 RunScanLoop 未运行则无回调）；
-	// - 插队扫描不影响 RunScanLoop 的主线 cursor 推进逻辑；
-	// - 插队高度按升序处理，且去重；
-	// - 严格要求所有传入的高度都满足 params.Confirmations 要求（height <= latest - params.Confirmations），否则直接返回错误；
-	// - 调用方可根据错误信息调整高度后重试。
+	// ScanBlockPrioritize priority scan for specified height list.
+	// Notes:
+	// - enqueues priority heights; RunScanLoop processes them between main-line scans;
+	// - priority scan results reuse RunScanLoop params.HandleBlock (no callback if RunScanLoop not running);
+	// - priority scan does not affect RunScanLoop main cursor advancement;
+	// - priority heights processed ascending, deduplicated;
+	// - all heights must satisfy params.Confirmations (height <= latest - params.Confirmations) or error is returned;
+	// - caller may adjust heights per error and retry.
 	ScanBlockPrioritize(heights []uint64) error
 }
 
@@ -125,8 +125,8 @@ func (t *taskRunner) Stop() {
 
 func (t *taskRunner) Running() bool { return t != nil && t.stop != nil }
 
-// Base 区块扫描器基类：提供 ScanTargetFunc 注入、任务运行控制与默认未实现方法。
-// 各链实现建议嵌入该结构体，并按需重写 BlockScanner 接口中的方法。
+// Base block scanner base class: provides ScanTargetFunc injection, task run control, and default not-implemented methods.
+// Chain implementations should embed this struct and override BlockScanner methods as needed.
 type Base struct {
 	Mu             sync.RWMutex
 	ScanTargetFunc BlockScanTargetFunc
@@ -135,7 +135,7 @@ type Base struct {
 	taskRunner   *taskRunner
 }
 
-// NewBlockScannerBase 创建扫描器基类
+// NewBlockScannerBase creates scanner base
 func NewBlockScannerBase() *Base {
 	return &Base{PeriodOfTask: defaultPeriodOfTask}
 }
@@ -145,7 +145,7 @@ func (bs *Base) SetBlockScanTargetFunc(f BlockScanTargetFunc) error {
 	return nil
 }
 
-// SetTask 设置内部周期任务（不在接口中暴露，供各链扫描器在构造时注入）。
+// SetTask sets internal periodic task (not exposed on interface; injected by chain scanners at construction).
 func (bs *Base) SetTask(task func()) {
 	if bs.taskRunner != nil && bs.taskRunner.Running() {
 		bs.taskRunner.Stop()
@@ -206,25 +206,25 @@ func (bs *Base) ExtractTransactionAndReceiptData(txid string, scanTargetFunc Blo
 	return nil, nil, fmt.Errorf("ExtractTransactionAndReceiptData not implement")
 }
 
-// GetBalanceByAddress 返回未实现错误，由具体链的扫描器实现。
-// 各链实现应调用 QueryBalancesConcurrent 辅助函数进行并发查询。
+// GetBalanceByAddress returns not-implemented error; implemented by chain-specific scanners.
+// Chain implementations should call QueryBalancesConcurrent helper for concurrent queries.
 func (bs *Base) GetBalanceByAddress(address ...string) ([]*types.Balance, error) {
 	return nil, fmt.Errorf("GetBalanceByAddress not implement")
 }
 
-// BalanceQueryFunc 查询单个地址余额的回调函数，由 QueryBalancesConcurrent 调用。
+// BalanceQueryFunc callback to query single address balance, invoked by QueryBalancesConcurrent.
 type BalanceQueryFunc func(address string) (confirmed, unconfirmed, total string, err error)
 
-// QueryBalancesConcurrent 并发查询多个地址余额。
-// 各链扫描器在实现 GetBalanceByAddress 时调用此辅助方法。
+// QueryBalancesConcurrent concurrently queries balances for multiple addresses.
+// Chain scanners should call this helper when implementing GetBalanceByAddress.
 //
-// 参数：
-//   - symbol: 链标识
-//   - addresses: 地址列表
-//   - query: 单地址查询回调函数，返回已确认余额、未确认余额、总余额
-//   - concurrency: 并发限制，默认20
+// Parameters:
+//   - symbol: chain identifier
+//   - addresses: address list
+//   - query: single-address query callback returning confirmed, unconfirmed, and total balance
+//   - concurrency: concurrency limit, default 20
 //
-// 返回按传入地址顺序排列的 Balance 列表。
+// Returns Balance list in the same order as input addresses.
 func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query BalanceQueryFunc, concurrency int) ([]*types.Balance, error) {
 	if len(addresses) == 0 {
 		return make([]*types.Balance, 0), nil
@@ -246,21 +246,21 @@ func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query
 		wg         sync.WaitGroup
 	)
 
-	// 结果收集协程
+	// result collector goroutine
 	go func() {
 		for r := range resultChan {
 			result[r.index] = r.balance
 		}
 	}()
 
-	// 并发查询
+	// concurrent queries
 	for i, addr := range addresses {
 		wg.Add(1)
 		go func(idx int, address string) {
 			defer wg.Done()
 
-			sem <- struct{}{}        // 获取信号量
-			defer func() { <-sem }() // 释放信号量
+			sem <- struct{}{}        // acquire semaphore
+			defer func() { <-sem }() // release semaphore
 
 			confirmed, unconfirmed, total, err := query(address)
 			if err != nil {
@@ -287,7 +287,7 @@ func (bs *Base) QueryBalancesConcurrent(symbol string, addresses []string, query
 	wg.Wait()
 	close(resultChan)
 
-	// 检查是否有错误
+	// check for errors
 	select {
 	case err := <-errChan:
 		return nil, err
@@ -309,8 +309,8 @@ func (bs *Base) RunScanLoop(params ScanLoopParams) error {
 	return fmt.Errorf("RunScanLoop not implement")
 }
 
-// ScanBlockPrioritize 默认返回未实现错误，各链扫描器应重写此方法。
-// 实现参考：在 RunScanLoop 运行时，将插队高度加入优先队列，由 RunScanLoop 在主线间隙处理。
+// ScanBlockPrioritize default returns not-implemented error; chain scanners should override.
+// Implementation reference: while RunScanLoop runs, enqueue priority heights; RunScanLoop handles them between main-line scans.
 func (bs *Base) ScanBlockPrioritize(heights []uint64) error {
 	return fmt.Errorf("ScanBlockPrioritize not implement")
 }

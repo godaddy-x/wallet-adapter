@@ -1,14 +1,14 @@
-// Package amount 提供链上资产金额精度换算，供 wallet-adapter 与业务下游统一使用。
+// Package amount on-chain asset amount precision conversion for wallet-adapter and downstream business use.
 //
-// 严格模式（StringToBigInt / HumanToChainUnit）：
-//   - 仅非负数；禁止逗号、科学计数法、正负号、空格
-//   - 唯一零值 "0"；禁止 0.0、整数前导零、小数末尾零、.5、5. 等
-//   - 小数位超过 decimal 直接报错，不静默截断
-//   - decimal 范围 [0, MaxDecimal]（当前 MaxDecimal=78）
+// Strict mode (StringToBigInt / HumanToChainUnit):
+//   - non-negative only; commas, scientific notation, signs, and spaces are rejected
+//   - sole zero value "0"; rejects 0.0, integer leading zeros, trailing fractional zeros, .5, 5., etc.
+//   - fractional digits exceeding decimal return error; no silent truncation
+//   - decimal range [0, MaxDecimal] (currently MaxDecimal=78)
 //
-// 核心 API：
-//   - StringToBigInt / BigIntToDecimal — 人类可读 ↔ 链上最小单位
-//   - HumanToChainUnit / HumanToChainUnitString — 业务/合约入口
-//   - SumHumanTotal — 多笔人类可读金额求和
-//   - ChainUnitString — 链上最小单位十进制字符串
+// Core API:
+//   - StringToBigInt / BigIntToDecimal — human-readable ↔ smallest on-chain unit
+//   - HumanToChainUnit / HumanToChainUnitString — business/contract entry points
+//   - SumHumanTotal — sum multiple human-readable amounts
+//   - ChainUnitString — decimal string of smallest on-chain unit
 package amount

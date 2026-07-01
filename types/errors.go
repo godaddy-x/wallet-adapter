@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-// 错误码分区：2xxx 交易、3xxx 账户/地址、4xxx 网络、9xxx 系统；AdapterError 为适配器统一错误类型。
-// 交易相关错误码（2xxx）
+// Error code ranges: 2xxx transaction, 3xxx account/address, 4xxx network, 9xxx system; AdapterError is the unified adapter error type.
+// Transaction-related error codes (2xxx)
 const (
 	ErrInsufficientBalanceOfAccount      = 2001
 	ErrInsufficientBalanceOfAddress      = 2002
@@ -19,7 +19,7 @@ const (
 	ErrInsufficientTokenBalanceOfAddress = 2009
 )
 
-// 账户/地址/合约等错误码（3xxx）
+// Account/address/contract error codes (3xxx)
 const (
 	ErrAccountNotFound     = 3001
 	ErrAddressNotFound     = 3002
@@ -29,19 +29,19 @@ const (
 	ErrNonceInvalid        = 3007
 )
 
-// 网络/节点错误码（4xxx）
+// Network/node error codes (4xxx)
 const (
 	ErrCallFullNodeAPIFailed = 4001
 	ErrNetworkRequestFailed  = 4002
 )
 
-// 系统/未知错误码（9xxx）
+// System/unknown error codes (9xxx)
 const (
 	ErrUnknownException = 9001
 	ErrSystemException  = 9002
 )
 
-// AdapterError 适配器统一错误类型，带 Code 与 Msg，可序列化为 JSON。
+// AdapterError unified adapter error type with Code and Msg; JSON-serializable.
 type AdapterError struct {
 	Code uint64 `json:"code"`
 	Msg  string `json:"msg"`

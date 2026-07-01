@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestPow10_ReturnsIndependentCopy 缓存命中时返回的 *big.Int 必须与缓存隔离，避免污染全局
+// TestPow10_ReturnsIndependentCopy returned *big.Int on cache hit must be isolated from cache to avoid global pollution
 func TestPow10_ReturnsIndependentCopy(t *testing.T) {
 	const d int64 = 18
 	a, err := pow10(d)
@@ -25,7 +25,7 @@ func TestPow10_ReturnsIndependentCopy(t *testing.T) {
 		t.Fatal("mutating first pow10 result changed second copy")
 	}
 
-	// 再次加载应仍等于初始缓存值
+	// reload should still equal initial cached value
 	c, err := pow10(d)
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +35,7 @@ func TestPow10_ReturnsIndependentCopy(t *testing.T) {
 	}
 }
 
-// TestPow10_CacheEndpoints 边界 decimal 可缓存且数值正确
+// TestPow10_CacheEndpoints boundary decimals are cacheable with correct values
 func TestPow10_CacheEndpoints(t *testing.T) {
 	for _, d := range []int64{0, 1, MaxDecimal} {
 		p, err := pow10(d)
@@ -49,7 +49,7 @@ func TestPow10_CacheEndpoints(t *testing.T) {
 	}
 }
 
-// TestPow10_Concurrent 并发读缓存不产生 data race（配合 go test -race）
+// TestPow10_Concurrent concurrent cache reads must not data race (use go test -race)
 func TestPow10_Concurrent(t *testing.T) {
 	const goroutines = 32
 	const loops = 200
@@ -71,7 +71,7 @@ func TestPow10_Concurrent(t *testing.T) {
 					t.Errorf("pow10(%d) mismatch", d)
 					return
 				}
-				// 偶发变异，验证不影响其他 goroutine 读到的缓存
+				// occasional mutation to verify other goroutines still read correct cache
 				if i%17 == 0 {
 					p.Add(p, big.NewInt(1))
 				}
@@ -81,7 +81,7 @@ func TestPow10_Concurrent(t *testing.T) {
 	wg.Wait()
 }
 
-// TestStringToBigInt_ReturnsNewBigInt 每次解析返回独立 *big.Int
+// TestStringToBigInt_ReturnsNewBigInt each parse returns an independent *big.Int
 func TestStringToBigInt_ReturnsNewBigInt(t *testing.T) {
 	a, err := StringToBigInt("1.5", 6)
 	if err != nil {
@@ -97,7 +97,7 @@ func TestStringToBigInt_ReturnsNewBigInt(t *testing.T) {
 	}
 }
 
-// TestSumHumanTotal_DoesNotMutateInputs SumHumanTotal 不应修改调用方传入的 slice 元素语义
+// TestSumHumanTotal_DoesNotMutateInputs SumHumanTotal must not mutate caller slice element semantics
 func TestSumHumanTotal_ReusesTotalAccumulator(t *testing.T) {
 	human, chain, err := SumHumanTotal([]string{"0.001", "0.002"}, 18)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestBigIntToDecimal_DoesNotMutateInput(t *testing.T) {
 	}
 }
 
-// BenchmarkPow10_CacheHit 热路径：缓存命中
+// BenchmarkPow10_CacheHit hot path: cache hit
 func BenchmarkPow10_CacheHit(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		if _, err := pow10(18); err != nil {
@@ -134,7 +134,7 @@ func BenchmarkPow10_CacheHit(b *testing.B) {
 	}
 }
 
-// BenchmarkStringToBigInt_typical 典型 ETH 金额解析
+// BenchmarkStringToBigInt_typical typical ETH amount parsing
 func BenchmarkStringToBigInt_typical(b *testing.B) {
 	const s = "1234.567890123456789"
 	for i := 0; i < b.N; i++ {
@@ -144,7 +144,7 @@ func BenchmarkStringToBigInt_typical(b *testing.B) {
 	}
 }
 
-// BenchmarkBigIntToDecimal_typical 典型链上→可读
+// BenchmarkBigIntToDecimal_typical typical on-chain -> human-readable
 func BenchmarkBigIntToDecimal_typical(b *testing.B) {
 	v, _ := new(big.Int).SetString("1234567890123456789", 10)
 	for i := 0; i < b.N; i++ {

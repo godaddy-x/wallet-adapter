@@ -1,17 +1,17 @@
-// Package config 提供链配置的通用接口与 JSON 解析，供各子类适配器（如 github.com/godaddy-x/wallet-adapter-eth）复用。
+// Package config provides common chain config interfaces and JSON parsing, reused by sub-adapters (e.g. github.com/godaddy-x/wallet-adapter-eth).
 package config
 
 import (
 	"strconv"
 )
 
-// Configer 供 LoadAssetsConfig 使用的只读配置接口（如 JSON 配置段、map），与常见 config 库兼容。
+// Configer is a read-only config interface for LoadAssetsConfig (e.g. JSON config sections, maps), compatible with common config libraries.
 type Configer interface {
 	String(key string) string
 	Int64(key string) (int64, error)
 }
 
-// MapConfig 将 map[string]string 转为 Configer（key 转小写匹配）。
+// MapConfig wraps map[string]string as Configer (keys matched case-insensitively).
 type MapConfig map[string]string
 
 func (m MapConfig) String(key string) string {

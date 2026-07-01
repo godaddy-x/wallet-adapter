@@ -1,21 +1,21 @@
-// Package adapter 多主链适配器基础框架，提供交易构建、广播与区块扫描等核心能力。
+// Package adapter multi-chain adapter foundation providing core capabilities such as transaction building, broadcasting, and block scanning.
 //
-// 子包划分：
-//   - types   — 数据类型与错误码（含 BlockHeader、TxExtractData、Balance 等扫块类型）
-//   - wallet  — 钱包数据访问：Wallet、WalletDAI、WalletDAIBase（供 flow/decoder 回调查询钱包/账户/地址/余额等）
-//   - decoder — 解码器：TransactionDecoder（transaction.go）、AddressDecoder（address.go）、SmartContractDecoder（contract.go，可选），各带 Base 基类；签名由外部 MPC 提供
-//   - config  — 链配置通用接口 Configer、MapConfig 与 JSON 解析（KVFromJSONFile、KVFromJSONContent），供 AssetsConfig.LoadAssetsConfig 复用
-//   - chain   — 链适配器 ChainAdapter 与注册表 RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder；AssetsConfig、SmartContractDecoder 可选
-//   - flow    — 构建与广播流程 BuildTransaction、BuildSmartContractTransaction、BuildSummaryTransaction、SendTransaction（可传入 WalletDAI 回调查询）
-//   - scanner — 区块扫描器 BlockScanner 与 Base（按高度扫块、持续循环、插队扫描、地址余额查询）
-//   - amount  — 金额精度换算（人类可读 ↔ 链上最小单位），下游 import "github.com/godaddy-x/wallet-adapter/amount"
+// Subpackages:
+//   - types   — data types and error codes (including block-scan types like BlockHeader, TxExtractData, Balance)
+//   - wallet  — wallet data access: Wallet, WalletDAI, WalletDAIBase (for flow/decoder callbacks to query wallet/account/address/balance, etc.)
+//   - decoder — decoders: TransactionDecoder (transaction.go), AddressDecoder (address.go), SmartContractDecoder (contract.go, optional), each with a Base class; signing is provided by external MPC
+//   - config  — common chain config interface Configer, MapConfig, and JSON parsing (KVFromJSONFile, KVFromJSONContent), reused by AssetsConfig.LoadAssetsConfig
+//   - chain   — chain adapter ChainAdapter and registry RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder; AssetsConfig and SmartContractDecoder are optional
+//   - flow    — build and broadcast flow: BuildTransaction, BuildSmartContractTransaction, BuildSummaryTransaction, SendTransaction (WalletDAI may be passed for callback queries)
+//   - scanner — block scanner BlockScanner and Base (scan by height, continuous loop, priority scan, address balance queries)
+//   - amount  — on-chain amount precision conversion (human-readable ↔ smallest on-chain unit); downstream import "github.com/godaddy-x/wallet-adapter/amount"
 //
-// 本包对上述子包做统一导出，便于调用方 import "github.com/godaddy-x/wallet-adapter" 使用。
+// This package re-exports the subpackages above so callers can import "github.com/godaddy-x/wallet-adapter".
 //
-// 使用示例：
+// Example:
 //
 //	decoder, _ := adapter.GetTransactionDecoder("BTC")
 //	rawTx := &adapter.RawTransaction{ Coin: adapter.Coin{Symbol: "BTC"}, Account: account, To: map[string]string{toAddr: amount}, Required: 1 }
-//	pendingTx, _ := adapter.BuildTransaction(decoder, wrapper, rawTx) // 入口为 flow，返回 PendingSignTx；wrapper 不可为 nil
+//	pendingTx, _ := adapter.BuildTransaction(decoder, wrapper, rawTx) // entry is flow; returns PendingSignTx; wrapper must not be nil
 //	tx, _ := adapter.SendTransaction(decoder, wrapper, pendingTx)
 package adapter

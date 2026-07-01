@@ -1,7 +1,7 @@
-// Package types 多主链适配器核心数据类型（交易、账户、错误等）
+// Package types core multi-chain adapter data types (transactions, accounts, errors, etc.)
 package types
 
-// Coin 币种/链标识
+// Coin coin/chain identifier
 //
 //easyjson:json
 type Coin struct {
@@ -10,41 +10,41 @@ type Coin struct {
 	Contract   SmartContract `json:"contract"`
 }
 
-// SmartContract 智能合约/代币信息
+// SmartContract smart contract/token info
 //
 //easyjson:json
 type SmartContract struct {
 	Symbol   string `json:"symbol"`
 	Address  string `json:"address"`
 	Token    string `json:"token"`
-	Protocol string `json:"protocol"` // 合约角色，见 SmartContractProtocol* 常量
+	Protocol string `json:"protocol"` // contract role; see SmartContractProtocol* constants
 	Name     string `json:"name"`
 	Decimals uint64 `json:"decimals"`
 }
 
-// ScanTarget 合约命中值（*types.Coin / types.Coin）中 SmartContract.Protocol 约定：
-// 业务层登记合约时写入，供链适配器区分 ERC20 代币合约与批量转账 BatchSender 等。
+// ScanTarget contract hit value (*types.Coin / types.Coin) SmartContract.Protocol convention:
+// written by business layer when registering contracts; used by chain adapters to distinguish ERC20 token contracts from BatchSender batch transfers, etc.
 const (
 	SmartContractProtocolERC20       = "erc20"
 	SmartContractProtocolBatchSender = "batch_sender"
 )
 
-// PendingSignTx 待签名交易单：构建后产出，广播时入参。
-// 构建成功即确定 Data（原始交易单 JSON，贯穿流程不变，仅反序列化读参）、DataSign、TradeSign（用于保证 Data 不被篡改）；
-// 随后由 MPC 签名填充 SignerList，再提交广播。
+// PendingSignTx pending-sign transaction: produced after build, input when broadcasting.
+// On successful build, Data (raw transaction JSON, immutable throughout the flow, only deserialized for reads), DataSign, and TradeSign are fixed (to prevent Data tampering);
+// MPC then fills SignerList before submit/broadcast.
 //
 //easyjson:json
 type PendingSignTx struct {
 	Sid        string            `json:"sid"`
-	Data       string            `json:"data"`      // 原始交易单 JSON，全程不变
-	DataSign   string            `json:"dataSign"`  // 构建时确定，保证 Data 不被篡改
-	TradeSign  string            `json:"tradeSign"` // 构建时确定，保证 Data 不被篡改
+	Data       string            `json:"data"`      // raw transaction JSON, immutable throughout
+	DataSign   string            `json:"dataSign"`  // fixed at build time to prevent Data tampering
+	TradeSign  string            `json:"tradeSign"` // fixed at build time to prevent Data tampering
 	Code       string            `json:"code"`
 	Message    string            `json:"message"`
-	SignerList map[string]string `json:"signerList"` // MPC 签名后填充，再提交广播
+	SignerList map[string]string `json:"signerList"` // filled by MPC before submit/broadcast
 }
 
-// RawTransaction 原始交易单
+// RawTransaction raw transaction
 //
 //easyjson:json
 type RawTransaction struct {
@@ -61,9 +61,9 @@ type RawTransaction struct {
 	IsSubmit    bool                       `json:"isSubmit"`
 	Change      *Address                   `json:"change"`
 	ExtParam    map[string]string          `json:"extParam"`
-	// SignExt 签名校验元数据（JSON 对象字符串），仅 adapter 建单写入；含 chainId、signScheme 等。
+	// SignExt signature verification metadata (JSON object string); written only by adapter at build time; includes chainId, signScheme, etc.
 	SignExt string `json:"signExt,omitempty"`
-	// SpeedUp 加速/替换 pending 交易；非空时建单使用固定 nonce 与显式 gas，不走自动 nonce/gas。
+	// SpeedUp speed up/replace pending transaction; when non-empty, build uses fixed nonce and explicit gas, not automatic nonce/gas.
 	SpeedUp *SpeedUp `json:"speedUp,omitempty"`
 
 	Sid         string   `json:"sid"`
@@ -76,7 +76,7 @@ type RawTransaction struct {
 	TxTo        []string `json:"txTo"`
 }
 
-// KeySignature 单笔签名
+// KeySignature single signature
 //
 //easyjson:json
 type KeySignature struct {
@@ -88,7 +88,7 @@ type KeySignature struct {
 	RSV       bool     `json:"rsv"`
 }
 
-// Transaction 广播后的交易结果
+// Transaction broadcast transaction result
 //
 //easyjson:json
 type Transaction struct {
@@ -97,13 +97,13 @@ type Transaction struct {
 	TxID      string `json:"txid"`
 	AccountID string `json:"accountID"`
 	Coin      Coin   `json:"coin"`
-	// FromAddr 发送方地址列表，与 FromAmt 一一对应
+	// FromAddr sender address list, one-to-one with FromAmt
 	FromAddr []string `json:"fromAddr"`
-	// FromAmt 发送方金额列表，与 FromAddr 一一对应
+	// FromAmt sender amount list, one-to-one with FromAddr
 	FromAmt []string `json:"fromAmt"`
-	// ToAddr 接收方地址列表，与 ToAmt 一一对应
+	// ToAddr receiver address list, one-to-one with ToAmt
 	ToAddr []string `json:"toAddr"`
-	// ToAmt 接收方金额列表，与 ToAddr 一一对应
+	// ToAmt receiver amount list, one-to-one with ToAddr
 	ToAmt       []string `json:"toAmt"`
 	Amount      string   `json:"amount"`
 	Decimal     int32    `json:"decimal"`
@@ -117,16 +117,16 @@ type Transaction struct {
 	ConfirmTime int64    `json:"confirmTime"`
 	Status      string   `json:"status"`
 	Reason      string   `json:"reason"`
-	// OutputIndex 表示该 Transaction 对应的输出序号，语义随链类型变化：
-	// - EVM 链：表示事件日志索引（logIndex），>=0 为合约事件，-1 为主币转账，-2 为手续费记录
-	// - UTXO 链（BTC 等）：表示交易输出索引（vout）
-	// 用于精确定位同一 tx 内的多笔记录，确保业务层唯一性。
+	// OutputIndex output index for this Transaction; semantics vary by chain:
+	// - EVM chains: event log index (logIndex); >=0 contract event, -1 native transfer, -2 fee record
+	// - UTXO chains (BTC, etc.): transaction output index (vout)
+	// Used to pinpoint records within the same tx for business-layer uniqueness.
 	OutputIndex int64 `json:"outputIndex"`
 
-	// FeeType 用于标识该记录是否为手续费类记录（如 "gas"）。
-	// 空值表示该记录为普通转账类记录。
+	// FeeType marks fee-class records (e.g. "gas").
+	// Empty means a normal transfer record.
 	FeeType string `json:"feeType"`
-	// ExtParam 为键值对扩展字段，便于结构化存储额外信息（如 contract_creation 等）。
+	// ExtParam key-value extension fields for structured extra info (e.g. contract_creation).
 	ExtParam map[string]string `json:"extParam"`
 }
 
@@ -135,7 +135,7 @@ const (
 	TxStatusFail    = "0"
 )
 
-// SummaryRawTransaction 汇总交易参数
+// SummaryRawTransaction summary transaction parameters
 //
 //easyjson:json
 type SummaryRawTransaction struct {
@@ -153,7 +153,7 @@ type SummaryRawTransaction struct {
 	ExtParam           string              `json:"extParam"`
 }
 
-// FeesSupportAccount 手续费支持账户
+// FeesSupportAccount fee support account
 //
 //easyjson:json
 type FeesSupportAccount struct {
@@ -162,7 +162,7 @@ type FeesSupportAccount struct {
 	FeesSupportScale string `json:"feesScale"`
 }
 
-// RawTransactionWithError 带错误的原始交易（汇总场景）
+// RawTransactionWithError raw transaction with error (summary scenario)
 //
 //easyjson:json
 type RawTransactionWithError struct {
@@ -170,7 +170,7 @@ type RawTransactionWithError struct {
 	Error *AdapterError   `json:"error"`
 }
 
-// AssetsAccount 资产账户
+// AssetsAccount asset account
 //
 //easyjson:json
 type AssetsAccount struct {
@@ -188,7 +188,7 @@ type AssetsAccount struct {
 	ExtParam  string   `json:"extParam"`
 }
 
-// Address 地址
+// Address address
 //
 //easyjson:json
 type Address struct {
@@ -203,7 +203,7 @@ type Address struct {
 	ExtParam  string `json:"extParam"`
 }
 
-// 帐户/地址资产余额
+// AssetBalance account/address asset balance
 //
 //easyjson:json
 type AssetBalance struct {
@@ -211,7 +211,7 @@ type AssetBalance struct {
 	WalletID         string `json:"walletID"`
 	AccountID        string `json:"accountID"`
 	Address          string `json:"address"`
-	MainSymbol       string `json:"mainSymbol"` // 基础分类-> mainSymbol
+	MainSymbol       string `json:"mainSymbol"` // base category -> mainSymbol
 	Symbol           string `json:"symbol"`
 	ContractAddress  string `json:"contractAddress"`
 	Balance          string `json:"balance"`

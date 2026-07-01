@@ -1,4 +1,4 @@
-// 交易单解析器：创建、验证、广播（签名由外部 MPC 完成）
+// Transaction decoder: create, verify, broadcast (signing is done by external MPC)
 package decoder
 
 import (
@@ -6,60 +6,60 @@ import (
 	"github.com/godaddy-x/wallet-adapter/wallet"
 )
 
-// TransactionDecoder 交易单解析器，每条链实现此接口即可接入统一构建与广播流程；签名由外部 MPC 提供。
-// 构建待签 PendingSignTx 的入口为 flow.BuildTransaction / flow.BuildSmartContractTransaction，decoder 只负责构建/验签/提交 rawTx。
-// wrapper 为 WalletDAI，可为 nil；非 nil 时实现层可回调查询钱包/账户/地址/交易等。
+// TransactionDecoder decodes and submits transactions; each chain implements this interface to plug into the unified build/broadcast flow. Signing is provided by external MPC.
+// The entry points for building PendingSignTx are flow.BuildTransaction / flow.BuildSmartContractTransaction; the decoder only builds/verifies/submits rawTx.
+// wrapper is WalletDAI and may be nil; when non-nil, implementations may callback to query wallet/account/address/transaction, etc.
 type TransactionDecoder interface {
-	// CreateRawTransaction 根据 rawTx 构建原始交易，填充 RawHex、Fees、Signatures 等。若 wrapper 非 nil，可回调查询（如 GetAddress/GetAssetsAccountByAddress、账户列表等）。
+	// CreateRawTransaction builds the raw transaction from rawTx, filling RawHex, Fees, Signatures, etc. When wrapper is non-nil, callbacks may be used (e.g. GetAddress/GetAssetsAccountByAddress, account lists, etc.).
 	CreateRawTransaction(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) error
-	// SignRawTransaction 对 rawTx 进行本地签名并写回 Signatures。签名由外部 MPC 完成时可不实现。
+	// SignRawTransaction signs rawTx locally and writes back Signatures. May be omitted when signing is done by external MPC.
 	SignRawTransaction(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) error
-	// SubmitRawTransaction 将已签名的 rawTx 提交到链上节点并返回交易结果；调用前应已通过 VerifyRawTransaction。若 wrapper 非 nil 可回调查询。
+	// SubmitRawTransaction submits the signed rawTx to the chain node and returns the transaction result; VerifyRawTransaction should have passed first. When wrapper is non-nil, callbacks may be used.
 	SubmitRawTransaction(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) (*types.Transaction, error)
-	// VerifyRawTransaction 合并并校验 rawTx 的 Signatures；若 wrapper 非 nil，可回调查询（如校验地址归属）。
+	// VerifyRawTransaction merges and validates rawTx Signatures; when wrapper is non-nil, callbacks may be used (e.g. address ownership checks).
 	VerifyRawTransaction(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) error
-	// GetRawTransactionFeeRate 返回当前链建议的费率与单位（如 "10"、"sat/vB"）。若 wrapper 非 nil 可回调查询。
+	// GetRawTransactionFeeRate returns the chain's suggested fee rate and unit (e.g. "10", "sat/vB"). When wrapper is non-nil, callbacks may be used.
 	GetRawTransactionFeeRate(wrapper wallet.WalletDAI) (feeRate, unit string, err error)
-	// EstimateRawTransactionFee 根据 rawTx 估算手续费并写回 rawTx.Fees；若 wrapper 非 nil 可回调查询。
+	// EstimateRawTransactionFee estimates fees from rawTx and writes back rawTx.Fees; when wrapper is non-nil, callbacks may be used.
 	EstimateRawTransactionFee(wrapper wallet.WalletDAI, rawTx *types.RawTransaction) error
-	// CreateSummaryRawTransactionWithError 根据汇总参数生成多笔 RawTransactionWithError；若 wrapper 非 nil 可回调查询（如过滤非本业务地址）。
+	// CreateSummaryRawTransactionWithError generates multiple RawTransactionWithError from summary params; when wrapper is non-nil, callbacks may be used (e.g. filtering non-business addresses).
 	CreateSummaryRawTransactionWithError(wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) ([]*types.RawTransactionWithError, error)
 }
 
-// TransactionDecoderBase 交易单解析器基类，未重写的方法均返回“未实现”，便于链实现时只实现必要方法。
+// TransactionDecoderBase is the transaction decoder base class; unimplemented methods return "not implemented" so chains only need to override required methods.
 type TransactionDecoderBase struct{}
 
-// CreateRawTransaction 基类默认返回未实现。
+// CreateRawTransaction base default returns not implemented.
 func (TransactionDecoderBase) CreateRawTransaction(wallet.WalletDAI, *types.RawTransaction) error {
 	return errNotImplement("CreateRawTransaction")
 }
 
-// SignRawTransaction 基类默认返回未实现（MPC 签名场景无需实现）。
+// SignRawTransaction base default returns not implemented (not needed for MPC signing).
 func (TransactionDecoderBase) SignRawTransaction(wallet.WalletDAI, *types.RawTransaction) error {
 	return errNotImplement("SignRawTransaction")
 }
 
-// SubmitRawTransaction 基类默认返回未实现。
+// SubmitRawTransaction base default returns not implemented.
 func (TransactionDecoderBase) SubmitRawTransaction(wallet.WalletDAI, *types.RawTransaction) (*types.Transaction, error) {
 	return nil, errNotImplement("SubmitRawTransaction")
 }
 
-// VerifyRawTransaction 基类默认返回未实现。
+// VerifyRawTransaction base default returns not implemented.
 func (TransactionDecoderBase) VerifyRawTransaction(wallet.WalletDAI, *types.RawTransaction) error {
 	return errNotImplement("VerifyRawTransaction")
 }
 
-// GetRawTransactionFeeRate 基类默认返回未实现。
+// GetRawTransactionFeeRate base default returns not implemented.
 func (TransactionDecoderBase) GetRawTransactionFeeRate(wallet.WalletDAI) (string, string, error) {
 	return "", "", errNotImplement("GetRawTransactionFeeRate")
 }
 
-// EstimateRawTransactionFee 基类默认返回未实现。
+// EstimateRawTransactionFee base default returns not implemented.
 func (TransactionDecoderBase) EstimateRawTransactionFee(wallet.WalletDAI, *types.RawTransaction) error {
 	return errNotImplement("EstimateRawTransactionFee")
 }
 
-// CreateSummaryRawTransactionWithError 基类默认返回未实现。
+// CreateSummaryRawTransactionWithError base default returns not implemented.
 func (TransactionDecoderBase) CreateSummaryRawTransactionWithError(wallet.WalletDAI, *types.SummaryRawTransaction) ([]*types.RawTransactionWithError, error) {
 	return nil, errNotImplement("CreateSummaryRawTransactionWithError")
 }

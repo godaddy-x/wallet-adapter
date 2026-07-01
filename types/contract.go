@@ -1,7 +1,7 @@
-// Package types 智能合约相关数据类型（与 decoder.SmartContractDecoder 配套）
+// Package types smart contract related data types (used with decoder.SmartContractDecoder)
 package types
 
-// TokenBalance 代币余额（合约 + 余额信息）
+// TokenBalance token balance (contract + balance info)
 //
 //easyjson:json
 type TokenBalance struct {
@@ -9,14 +9,14 @@ type TokenBalance struct {
 	Balance  *Balance       `json:"balance"`
 }
 
-// TxRawType 智能合约原始交易 Raw 字段类型
+// TxRawType smart contract raw transaction Raw field type
 const (
-	TxRawTypeHex    = 0 // hex 字符串
-	TxRawTypeJSON   = 1 // json 字符串
-	TxRawTypeBase64 = 2 // base64 字符串
+	TxRawTypeHex    = 0 // hex string
+	TxRawTypeJSON   = 1 // json string
+	TxRawTypeBase64 = 2 // base64 string
 )
 
-// SmartContractRawTransaction 智能合约原始交易单
+// SmartContractRawTransaction smart contract raw transaction
 //
 //easyjson:json
 type SmartContractRawTransaction struct {
@@ -38,23 +38,23 @@ type SmartContractRawTransaction struct {
 	TxTo         string                     `json:"txTo"`
 	AwaitResult  bool                       `json:"awaitResult"`
 	AwaitTimeout uint64                     `json:"awaitTimeout"`
-	// SpeedUp 加速/替换 pending 合约写链交易；非空时建单使用固定 nonce 与显式 gas。
+	// SpeedUp speed up/replace pending contract write transaction; when non-empty, build uses fixed nonce and explicit gas.
 	SpeedUp *SpeedUp `json:"speedUp,omitempty"`
-	// SignExt 签名校验元数据（JSON 对象字符串），仅 adapter 建单写入。
+	// SignExt signature verification metadata (JSON object string); written only by adapter at build time.
 	SignExt string `json:"signExt,omitempty"`
-	// 以下字段由 flow.BuildSmartContractTransaction 填充，语义与 RawTransaction 中同名字段一致；TxType=2 表示合约写链。
+	// Fields below are filled by flow.BuildSmartContractTransaction; same semantics as RawTransaction fields of the same name; TxType=2 means contract write.
 	CreateTime  int64  `json:"createTime"`
 	CreateNonce string `json:"createNonce"`
 	TxType      int64  `json:"txType"`
 }
 
-// SmartContractCallResult 状态常量
+// SmartContractCallResult status constants
 const (
 	SmartContractCallResultStatusFail    = 0
 	SmartContractCallResultStatusSuccess = 1
 )
 
-// SmartContractCallResult 合约只读调用结果（不产生链上交易）
+// SmartContractCallResult read-only contract call result (does not produce an on-chain transaction)
 //
 //easyjson:json
 type SmartContractCallResult struct {
@@ -65,7 +65,7 @@ type SmartContractCallResult struct {
 	Exception string `json:"exception"`
 }
 
-// ABIInfo 合约 ABI 信息
+// ABIInfo contract ABI info
 //
 //easyjson:json
 type ABIInfo struct {

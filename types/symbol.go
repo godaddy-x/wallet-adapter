@@ -1,6 +1,6 @@
 package types
 
-// BalanceModelType 余额模型（按地址或按账户）。
+// BalanceModelType balance model (by address or by account).
 type BalanceModelType uint32
 
 const (
@@ -8,7 +8,7 @@ const (
 	BalanceModelTypeAccount BalanceModelType = 1
 )
 
-// SymbolInfo 链/币种信息接口（Symbol、Decimal、CurveType、FullName、BalanceModelType）。
+// SymbolInfo chain/coin info interface (Symbol, Decimal, CurveType, FullName, BalanceModelType).
 type SymbolInfo interface {
 	Symbol() string
 	Decimal() int32
@@ -17,7 +17,7 @@ type SymbolInfo interface {
 	BalanceModelType() BalanceModelType
 }
 
-// SymbolInfoBase SymbolInfo 的默认空实现，供 ChainAdapterBase 嵌入。
+// SymbolInfoBase default empty SymbolInfo implementation for ChainAdapterBase embedding.
 type SymbolInfoBase struct{}
 
 func (SymbolInfoBase) Symbol() string                    { return "" }

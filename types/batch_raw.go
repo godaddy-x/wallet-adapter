@@ -1,6 +1,6 @@
 package types
 
-// BatchTransferRecipient 批量中单笔收款方（顺序由具体链适配器定义，须与链上编码一致）。
+// BatchTransferRecipient single recipient in a batch transfer (order defined by chain adapter; must match on-chain encoding).
 //
 //easyjson:json
 type BatchTransferRecipient struct {
@@ -8,10 +8,10 @@ type BatchTransferRecipient struct {
 	Amount  string `json:"amount"`
 }
 
-// BatchRawRequest 批量转账建单入参（跨链统一形态）。
+// BatchRawRequest batch transfer build input (cross-chain unified shape).
 //
-// Protocol 为可选扩展字段，由具体链适配器解析与校验；留空时由该适配器按默认批量协议处理。
-// ContractAddress、Recipients 等字段语义亦由各链实现约定。
+// Protocol is an optional extension field parsed and validated by the chain adapter; when empty, the adapter uses its default batch protocol.
+// ContractAddress, Recipients, and other field semantics are defined by each chain implementation.
 //
 //easyjson:json
 type BatchRawRequest struct {
@@ -22,14 +22,14 @@ type BatchRawRequest struct {
 	Account *AssetsAccount `json:"account"`
 	Coin    Coin           `json:"coin"`
 
-	// ContractAddress 本笔调用的链上合约/程序地址（语义由链适配器定义）；多数场景必填。
+	// ContractAddress on-chain contract/program address for this call (semantics defined by chain adapter); required in most scenarios.
 	ContractAddress string `json:"contractAddress"`
 
 	Recipients []BatchTransferRecipient `json:"recipients"`
 
 	FeeRate  string            `json:"feeRate,omitempty"`
 	ExtParam map[string]string `json:"extParam,omitempty"`
-	// SpeedUp 加速/替换 pending 批量交易；语义同 RawTransaction.SpeedUp。
+	// SpeedUp speed up/replace pending batch transaction; same semantics as RawTransaction.SpeedUp.
 	SpeedUp    *SpeedUp `json:"speedUp,omitempty"`
 	Sid        string   `json:"sid,omitempty"`
 	TxType     int64    `json:"txType,omitempty"`
