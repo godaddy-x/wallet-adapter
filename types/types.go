@@ -162,12 +162,67 @@ type FeesSupportAccount struct {
 	FeesSupportScale string `json:"feesScale"`
 }
 
+// Summary fee deficit reason constants (cross-chain).
+const (
+	FeeDeficitReasonInsufficientEnergy      = "insufficient_energy"
+	FeeDeficitReasonInsufficientBandwidth   = "insufficient_bandwidth"
+	FeeDeficitReasonInsufficientActivation  = "insufficient_activation"
+	FeeDeficitReasonInsufficientNativeForGas = "insufficient_native_for_gas"
+	FeeDeficitReasonSweepBlocked            = "sweep_blocked"
+)
+
+const SummaryPendingFeeRechargeRequired = "fee_recharge_required"
+
+// SummaryFeeDeficit native-coin top-up gap for a summary leg (see feeDeficits in CreateSummaryTx).
+//
+//easyjson:json
+type SummaryFeeDeficit struct {
+	Address     string `json:"address"`
+	Token       string `json:"token"`
+	TokenAmount string `json:"tokenAmount"`
+	Symbol      string `json:"symbol"`
+	Shortfall   string `json:"shortfall"`
+	Reason      string `json:"reason"`
+	Sid         string `json:"sid"`
+}
+
+// SummaryBuildResult output of BuildSummaryTransaction.
+type SummaryBuildResult struct {
+	PendingSignTx []*PendingSignTx
+	FeeDeficits   []*SummaryFeeDeficit
+}
+
+// SummaryFeeDeficitEvalRequest re-evaluates native fee gap for an existing summary leg.
+type SummaryFeeDeficitEvalRequest struct {
+	SummarySid        string
+	PendingSignTx     *PendingSignTx
+	PreviousShortfall string
+	PreviousReason    string
+}
+
+// SummaryFeeDeficitEvalResult current-time fee gap assessment for a summary leg.
+//
+//easyjson:json
+type SummaryFeeDeficitEvalResult struct {
+	SummarySid          string `json:"summarySid"`
+	Address             string `json:"address"`
+	Token               string `json:"token"`
+	TokenAmount         string `json:"tokenAmount"`
+	Symbol              string `json:"symbol"`
+	Shortfall           string `json:"shortfall"`
+	PreviousShortfall   string `json:"previousShortfall"`
+	Reason              string `json:"reason"`
+	CanRetryBroadcast   bool   `json:"canRetryBroadcast"`
+	NeedRecreateSummary bool   `json:"needRecreateSummary"`
+}
+
 // RawTransactionWithError raw transaction with error (summary scenario)
 //
 //easyjson:json
 type RawTransactionWithError struct {
-	RawTx *RawTransaction `json:"rawTx"`
-	Error *AdapterError   `json:"error"`
+	RawTx     *RawTransaction     `json:"rawTx"`
+	Error     *AdapterError       `json:"error"`
+	FeeDeficit *SummaryFeeDeficit `json:"feeDeficit,omitempty"`
 }
 
 // AssetsAccount asset account

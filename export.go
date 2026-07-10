@@ -25,6 +25,10 @@ type (
 	SummaryRawTransaction   = types.SummaryRawTransaction
 	FeesSupportAccount      = types.FeesSupportAccount
 	RawTransactionWithError = types.RawTransactionWithError
+	SummaryFeeDeficit       = types.SummaryFeeDeficit
+	SummaryBuildResult      = types.SummaryBuildResult
+	SummaryFeeDeficitEvalRequest = types.SummaryFeeDeficitEvalRequest
+	SummaryFeeDeficitEvalResult  = types.SummaryFeeDeficitEvalResult
 	AssetsAccount           = types.AssetsAccount
 	Address                 = types.Address
 	AdapterError            = types.AdapterError
@@ -101,8 +105,14 @@ const (
 	ErrNonceInvalid                      = types.ErrNonceInvalid
 	ErrCallFullNodeAPIFailed             = types.ErrCallFullNodeAPIFailed
 	ErrNetworkRequestFailed              = types.ErrNetworkRequestFailed
-	ErrUnknownException                  = types.ErrUnknownException
+	FeeDeficitReasonInsufficientEnergy       = types.FeeDeficitReasonInsufficientEnergy
+	FeeDeficitReasonInsufficientBandwidth    = types.FeeDeficitReasonInsufficientBandwidth
+	FeeDeficitReasonInsufficientActivation   = types.FeeDeficitReasonInsufficientActivation
+	FeeDeficitReasonInsufficientNativeForGas = types.FeeDeficitReasonInsufficientNativeForGas
+	FeeDeficitReasonSweepBlocked             = types.FeeDeficitReasonSweepBlocked
+	SummaryPendingFeeRechargeRequired        = types.SummaryPendingFeeRechargeRequired
 	ErrSystemException                   = types.ErrSystemException
+	ErrUnknownException                  = types.ErrUnknownException
 )
 
 func NewError(code uint64, text string) *AdapterError { return types.NewError(code, text) }
@@ -160,9 +170,25 @@ var NewBlockScannerBase = scanner.NewBlockScannerBase
 func BuildTransaction(d TransactionDecoder, wrapper WalletDAI, rawTx *RawTransaction) (*PendingSignTx, error) {
 	return flow.BuildTransaction(d, wrapper, rawTx)
 }
-func BuildSummaryTransaction(d TransactionDecoder, wrapper WalletDAI, sumRawTx *SummaryRawTransaction) ([]*PendingSignTx, error) {
+func BuildSummaryTransaction(d TransactionDecoder, wrapper WalletDAI, sumRawTx *SummaryRawTransaction) (*SummaryBuildResult, error) {
 	return flow.BuildSummaryTransaction(d, wrapper, sumRawTx)
 }
+func EvaluateSummaryFeeDeficit(d TransactionDecoder, wrapper WalletDAI, req *SummaryFeeDeficitEvalRequest) (*SummaryFeeDeficitEvalResult, error) {
+	return flow.EvaluateSummaryFeeDeficit(d, wrapper, req)
+}
+
+// Summary fee deficit helpers (cross-chain).
+var (
+	NewSummaryFeeDeficit            = flow.NewSummaryFeeDeficit
+	NewNativeGasFeeDeficit          = flow.NewNativeGasFeeDeficit
+	NewSweepBlockedFeeDeficit       = flow.NewSweepBlockedFeeDeficit
+	BuildSummaryFeeDeficitEvalResult = flow.BuildSummaryFeeDeficitEvalResult
+	TokenDisplaySymbol              = flow.TokenDisplaySymbol
+	SummarySourceAddress            = flow.SummarySourceAddress
+	SummaryAmountFromRaw            = flow.SummaryAmountFromRaw
+	SummaryTargetAddress            = flow.SummaryTargetAddress
+	DecodeSummaryRawTx              = flow.DecodeSummaryRawTx
+)
 func SendTransaction(d TransactionDecoder, wrapper WalletDAI, pendingTx *PendingSignTx) (*Transaction, error) {
 	return flow.SendTransaction(d, wrapper, pendingTx)
 }

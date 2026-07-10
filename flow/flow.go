@@ -66,9 +66,8 @@ func BuildTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, ra
 	return signData, nil
 }
 
-// BuildSummaryTransaction builds a list of summary transactions (each may carry Error):
-// decoder returns RawTransactionWithError list, then each entry gets nonce/time/type filled -> wrapper signs -> PendingSignTx is produced.
-func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) ([]*types.PendingSignTx, error) {
+// BuildSummaryTransaction builds summary pending sign txs and optional fee deficits.
+func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.WalletDAI, sumRawTx *types.SummaryRawTransaction) (*types.SummaryBuildResult, error) {
 	if d == nil {
 		return nil, errors.New("decoder is nil")
 	}
@@ -89,16 +88,23 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 
 	now := time.Now().UnixMilli()
 	txData := make([]*types.PendingSignTx, 0, len(rawTxArray))
+	feeDeficits := make([]*types.SummaryFeeDeficit, 0)
 	for k, v := range rawTxArray {
-		nonce, err := GetRandomSecure(32)
-		if err != nil {
-			return nil, err
+		sid := fmt.Sprintf("%s#s%d", sumRawTx.Sid, k)
+		if v.FeeDeficit != nil {
+			deficit := *v.FeeDeficit
+			deficit.Sid = sid
+			feeDeficits = append(feeDeficits, &deficit)
 		}
 		rawTx := v.RawTx
 		if rawTx == nil {
 			continue
 		}
-		rawTx.Sid = fmt.Sprintf("%s#%d", sumRawTx.Sid, k)
+		nonce, err := GetRandomSecure(32)
+		if err != nil {
+			return nil, err
+		}
+		rawTx.Sid = sid
 		rawTx.CreateTime = now
 		rawTx.CreateNonce = hex.EncodeToString(nonce)
 		rawTx.TxType = 1
@@ -107,7 +113,7 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 		if err != nil {
 			return nil, err
 		}
-		originalTxJSON := string(txJSON) // required: copy so callback mutations of txJSON do not affect the transaction payload
+		originalTxJSON := string(txJSON)
 
 		signData, err := wrapper.SignPendingTxData(txJSON)
 		if err != nil {
@@ -119,9 +125,18 @@ func BuildSummaryTransaction(d decoder.TransactionDecoder, wrapper wallet.Wallet
 			signData.Code = strconv.FormatUint(v.Error.Code, 10)
 			signData.Message = v.Error.Error()
 		}
+		if v.FeeDeficit != nil {
+			signData.Message = types.SummaryPendingFeeRechargeRequired
+		}
 		txData = append(txData, signData)
 	}
-	return txData, nil
+	if len(txData) == 0 && len(feeDeficits) == 0 {
+		return nil, errors.New("CreateSummaryRawTransactionWithError pending list is nil")
+	}
+	return &types.SummaryBuildResult{
+		PendingSignTx: txData,
+		FeeDeficits:   feeDeficits,
+	}, nil
 }
 
 // SendTransaction broadcasts a transaction:
