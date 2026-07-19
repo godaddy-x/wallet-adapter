@@ -3,6 +3,9 @@ package wallet
 
 import "github.com/godaddy-x/wallet-adapter/types"
 
+// TradeOrderOutboundLookupParams see types.TradeOrderOutboundLookupParams; duplicated here for WalletDAI ergonomics.
+type TradeOrderOutboundLookupParams = types.TradeOrderOutboundLookupParams
+
 type SearchParams struct {
 	CountQ          bool   // when true, the returned int64 is the total count
 	WalletID        string // wallet ID filter
@@ -44,6 +47,10 @@ type WalletDAI interface {
 	//   - TxAction: direction marker ("send"=outbound, "receive"=inbound, "internal"=internal transfer, "fee"=fee)
 	//   - OutputIndex: output index (-2=fee, -1=native coin, 0+=contract event index)
 	GetTransactionByTxID(txID, symbol string) ([]*types.Transaction, error)
+	// GetTradeOrderOutbound loads business trade order outbound snapshot for one txID (single DB round-trip).
+	// params.Address empty: all payer legs; non-empty: filter to that payer in memory.
+	// Found=false means no gateway order (not an error).
+	GetTradeOrderOutbound(params TradeOrderOutboundLookupParams) (*types.TradeOrderOutboundSnapshot, error)
 	// SignPendingTxData signs raw transaction JSON (rawTx) on the business side, returning PendingSignTx with DataSign/TradeSign to ensure transaction payload integrity;
 	// SendTransaction calls this again before broadcast to recompute DataSign/TradeSign and verify Data was not tampered with.
 	SignPendingTxData(txJSON []byte) (*types.PendingSignTx, error)
@@ -82,6 +89,9 @@ func (WalletDAIBase) GetAddressExtParam(address string, key string) (interface{}
 }
 func (WalletDAIBase) GetTransactionByTxID(txID, symbol string) ([]*types.Transaction, error) {
 	return nil, errNotImplement("GetTransactionByTxID")
+}
+func (WalletDAIBase) GetTradeOrderOutbound(params TradeOrderOutboundLookupParams) (*types.TradeOrderOutboundSnapshot, error) {
+	return nil, errNotImplement("GetTradeOrderOutbound")
 }
 func (WalletDAIBase) SignPendingTxData(txJSON []byte) (*types.PendingSignTx, error) {
 	return nil, errNotImplement("SignPendingTxData")

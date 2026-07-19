@@ -47,6 +47,10 @@ type (
 	TxOutPut               = types.TxOutPut
 	TxExtractData          = types.TxExtractData
 	ExtractDataItem        = types.ExtractDataItem
+	TradeOrderOutboundLookupParams = types.TradeOrderOutboundLookupParams
+	TradeOrderOutboundSnapshot     = types.TradeOrderOutboundSnapshot
+	TradeOrderPayerLeg             = types.TradeOrderPayerLeg
+	TradeOrderOutboundTarget       = types.TradeOrderOutboundTarget
 	ContractReceiptItem    = types.ContractReceiptItem
 	ScanTarget             = types.ScanTarget
 	ScanTargetParam        = types.ScanTargetParam

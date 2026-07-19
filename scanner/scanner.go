@@ -32,6 +32,8 @@ type ScanLoopParams struct {
 // - Does not include internal persistence (DAI) or business query capabilities (balance/address transactions, etc.); those belong to external systems or separate components.
 type BlockScanner interface {
 	SetBlockScanTargetFunc(scanTargetFunc BlockScanTargetFunc) error
+	// SetTradeOrderLookup wires business outbound snapshot lookup for per-tx fee accounting.
+	SetTradeOrderLookup(TradeOrderOutboundQuerier) error
 
 	// Run control: start/stop internal scan task.
 	Run() error
@@ -130,6 +132,8 @@ func (t *taskRunner) Running() bool { return t != nil && t.stop != nil }
 type Base struct {
 	Mu             sync.RWMutex
 	ScanTargetFunc BlockScanTargetFunc
+	// TradeOrderLookup optional; one GetTradeOrderOutbound call per tx during fee_extract.
+	TradeOrderLookup TradeOrderOutboundQuerier
 
 	PeriodOfTask time.Duration
 	taskRunner   *taskRunner
@@ -142,6 +146,12 @@ func NewBlockScannerBase() *Base {
 
 func (bs *Base) SetBlockScanTargetFunc(f BlockScanTargetFunc) error {
 	bs.ScanTargetFunc = f
+	return nil
+}
+
+// SetTradeOrderLookup wires business trade order lookup (e.g. open_scanner ScanWrapper).
+func (bs *Base) SetTradeOrderLookup(q TradeOrderOutboundQuerier) error {
+	bs.TradeOrderLookup = q
 	return nil
 }
 

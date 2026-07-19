@@ -237,6 +237,8 @@ type BlockScanResult struct {
 	ExtractedTxs       uint64 `json:"extractedTxs"`
 	// FailedTxIDs partial failed tx IDs (truncated) for quick diagnosis; full failure details persisted externally.
 	FailedTxIDs []string `json:"failedTxIDs"`
+	// FailedTxDetail first extraction failure (txid + cause) when Success=false.
+	FailedTxDetail string `json:"failedTxDetail,omitempty"`
 
 	// Header block header for this scan (when block fetch succeeds).
 	Header *BlockHeader `json:"header"`
