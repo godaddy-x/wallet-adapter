@@ -232,6 +232,7 @@ type BlockScanResult struct {
 	NetworkBlockHeight uint64 `json:"networkBlockHeight"`
 	Success            bool   `json:"success"`
 	ErrorReason        string `json:"errorReason"`
+	// TxTotal on-chain tx count in the block (with hash); used by open_scanner scanner block data — keep filled.
 	TxTotal            uint64 `json:"txTotal"`
 	TxFailed           uint64 `json:"txFailed"`
 	ExtractedTxs       uint64 `json:"extractedTxs"`
@@ -249,6 +250,14 @@ type BlockScanResult struct {
 	// Once marks whether this scan was priority/one-shot (triggered by ScanBlockPrioritize).
 	// Business can distinguish: true=priority scan result, false=main RunScanLoop regular scan result.
 	Once bool `json:"once"`
+
+	// Timing breakdown for ops/SLO and RPC diagnosis (scanner block data logs).
+	// IMPORTANT: do not remove or stop populating — chain adapters MUST fill; open_scanner logs when > 0.
+	ScanDurationMs    int64 `json:"scanDurationMs,omitempty"`    // full ScanBlockWithResult
+	FetchDurationMs   int64 `json:"fetchDurationMs,omitempty"`   // warmup: receipts + batch target queries
+	ExtractDurationMs int64 `json:"extractDurationMs,omitempty"` // per-tx extract workers
+	BlockRpcMs        int64 `json:"blockRpcMs,omitempty"`        // e.g. eth_getBlockByNumber
+	ReceiptsRpcMs     int64 `json:"receiptsRpcMs,omitempty"`     // block receipts + per-tx receipt fallback
 }
 
 // TxVerifyResult output of on-chain tx verification by txid returning creditable result set.

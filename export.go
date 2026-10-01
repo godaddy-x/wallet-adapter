@@ -167,8 +167,17 @@ type BlockScanner = scanner.BlockScanner
 type BlockScannerBase = scanner.Base
 type BlockScanTargetFunc = scanner.BlockScanTargetFunc
 type BalanceQueryFunc = scanner.BalanceQueryFunc
+type CrossCheckValidator = scanner.CrossCheckValidator
+type CrossCheckRequest = scanner.CrossCheckRequest
+type CrossCheckResult = scanner.CrossCheckResult
 
-var NewBlockScannerBase = scanner.NewBlockScannerBase
+var (
+	NewBlockScannerBase  = scanner.NewBlockScannerBase
+	RunPromoteCrossCheck = scanner.RunPromoteCrossCheck
+)
+
+// ----- chain config exports -----
+type VerifyAPIsConfigurer = chain.VerifyAPIsConfigurer
 
 // ----- flow exports -----
 func BuildTransaction(d TransactionDecoder, wrapper WalletDAI, rawTx *RawTransaction) (*PendingSignTx, error) {
