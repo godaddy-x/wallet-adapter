@@ -7,7 +7,8 @@
 - **Unified transaction types**: `RawTransaction`, `PendingSignTx` (pending sign payload), `Transaction`, `SummaryRawTransaction`
 - **Batch transfer (legacy type=0)**: `BatchRawRequest` remains in `types/`; **production batch** now uses scanner `CreateBatchTransferTrade` → `SmartContractRawTransaction` (CLI type=2). `adapter.BuildBatchTransaction` is no longer the production path
 - **Core flow**: Entry points in `flow` (`adapter.BuildTransaction` creates `PendingSignTx`, `adapter.SendTransaction` verifies and broadcasts); decoders only build/verify/submit rawTx — signing is done externally (e.g. MPC)
-- **Block scanning**: `BlockScanner` interface and `BlockScannerBase` — scan by height, continuous loop, single-height catch-up, extract transactions and receipts
+- **Block scanning**: `BlockScanner` interface and `BlockScannerBase` — scan by height, continuous loop (`ScanLoopParams`), single-height catch-up, `BlockScanResult` summary (incl. optional per-stage timing fields)
+- **Phase C (promote cross-check)**: optional `verifyAPIs` in node config — `adapter.ParseNodeConfigJSON`, `VerifyAPIsConfigurer.SetVerifyAPIs`, `CrossCheckValidator` + `RunPromoteCrossCheck` before promote (chain impl e.g. wallet-adapter-eth)
 - **Chain abstraction**: `ChainAdapter`, `TransactionDecoder`, `BlockScanner`, `AddressDecoder`; optional `WalletDAI` callback for wallet/account/address/balance lookups
 - **Chain config**: `config` package provides `Configer` and JSON parsing (`KVFromJSONFile` / `KVFromJSONContent`, `MapConfig`) for `AssetsConfig.LoadAssetsConfig` and similar
 - **Smart contracts** (optional): `SmartContractDecoder` and `ABIDAI` — token balance, ABI call/create/broadcast, contract metadata; `GetSmartContractDecoder(symbol)` per chain
@@ -37,7 +38,8 @@ wallet-adapter/
 │   └── contract.go           # SmartContractDecoder, SmartContractDecoderBase, ABIDAI
 ├── config/                   # Chain config interface and JSON parsing
 │   ├── configer.go           # Configer, MapConfig (for LoadAssetsConfig)
-│   └── json.go               # KVFromJSONFile, KVFromJSONContent
+│   ├── json.go               # KVFromJSONFile, KVFromJSONContent
+│   └── node_config.go        # ParseNodeConfigJSON (also re-exported as adapter.ParseNodeConfigJSON)
 ├── chain/                    # Chain adapter and registry
 │   ├── adapter.go            # ChainAdapter, ChainAdapterBase
 │   ├── config.go             # AssetsConfig, AssetsConfigBase

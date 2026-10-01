@@ -1,5 +1,6 @@
 // Unified exports: types, functions from types/wallet/decoder/config/chain/flow/scanner for one-stop import "github.com/godaddy-x/wallet-adapter".
-// The config package (Configer, JSON parsing) must be imported separately via "github.com/godaddy-x/wallet-adapter/config" for LoadAssetsConfig and similar reuse.
+// Phase C (promote cross-check): CrossCheckValidator, RunPromoteCrossCheck, VerifyAPIsConfigurer, ParseNodeConfigJSON (verifyAPIs in nodeConfig).
+// For LoadAssetsConfig file/section parsing, import "github.com/godaddy-x/wallet-adapter/config" (Configer, KVFromJSONFile, etc.).
 package adapter
 
 import (
@@ -7,6 +8,7 @@ import (
 
 	"github.com/godaddy-x/wallet-adapter/amount"
 	"github.com/godaddy-x/wallet-adapter/chain"
+	"github.com/godaddy-x/wallet-adapter/config"
 	"github.com/godaddy-x/wallet-adapter/decoder"
 	"github.com/godaddy-x/wallet-adapter/flow"
 	"github.com/godaddy-x/wallet-adapter/scanner"
@@ -38,6 +40,7 @@ type (
 	SymbolInfoBase          = types.SymbolInfoBase
 	BalanceModelType        = types.BalanceModelType
 	// block scanning
+	BlockScanResult        = types.BlockScanResult
 	BlockHeader            = types.BlockHeader
 	UnscanRecord           = types.UnscanRecord
 	Balance                = types.Balance
@@ -165,6 +168,7 @@ func ListSymbols() []string { return chain.ListSymbols() }
 // ----- scanner exports -----
 type BlockScanner = scanner.BlockScanner
 type BlockScannerBase = scanner.Base
+type ScanLoopParams = scanner.ScanLoopParams
 type BlockScanTargetFunc = scanner.BlockScanTargetFunc
 type BalanceQueryFunc = scanner.BalanceQueryFunc
 type CrossCheckValidator = scanner.CrossCheckValidator
@@ -177,7 +181,13 @@ var (
 )
 
 // ----- chain config exports -----
+type MapConfig = config.MapConfig
 type VerifyAPIsConfigurer = chain.VerifyAPIsConfigurer
+
+// ParseNodeConfigJSON parses ow_symbol_node_config.nodeConfig (scalar fields → MapConfig; verifyAPIs returned separately).
+func ParseNodeConfigJSON(raw string) (MapConfig, []string, error) {
+	return config.ParseNodeConfigJSON(raw)
+}
 
 // ----- flow exports -----
 func BuildTransaction(d TransactionDecoder, wrapper WalletDAI, rawTx *RawTransaction) (*PendingSignTx, error) {

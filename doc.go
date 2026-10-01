@@ -7,7 +7,7 @@
 //   - config  — common chain config interface Configer, MapConfig, and JSON parsing (KVFromJSONFile, KVFromJSONContent), reused by AssetsConfig.LoadAssetsConfig
 //   - chain   — chain adapter ChainAdapter and registry RegAdapter/GetAdapter/GetTransactionDecoder/GetBlockScanner/GetAddressDecoder/GetSmartContractDecoder; AssetsConfig and SmartContractDecoder are optional
 //   - flow    — build and broadcast flow: BuildTransaction, BuildSmartContractTransaction, BuildSummaryTransaction, SendTransaction (WalletDAI may be passed for callback queries)
-//   - scanner — block scanner BlockScanner and Base (scan by height, continuous loop, priority scan, address balance queries)
+//   - scanner — block scanner BlockScanner and Base (scan by height, continuous loop via ScanLoopParams, BlockScanResult, priority scan, address balance queries); Phase C promote cross-check: CrossCheckValidator, RunPromoteCrossCheck (see adapter.ParseNodeConfigJSON / VerifyAPIsConfigurer)
 //   - amount  — on-chain amount precision conversion (human-readable ↔ smallest on-chain unit); downstream import "github.com/godaddy-x/wallet-adapter/amount"
 //
 // This package re-exports the subpackages above so callers can import "github.com/godaddy-x/wallet-adapter".
