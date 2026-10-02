@@ -7,7 +7,8 @@ import (
 )
 
 // CrossCheckRequest first-scan anchor for Phase C (mapped from newly).
-// Chains compare peer RPC facts to these fields only; no re-extract of amount/contract on peer.
+// All chains: tx existence + block anchor. ETH native (NativeStrict): also from/to/value on eth_getTransactionByHash.
+// Token / contract legs: anchor only; log-level checks are optional future work (no re-extract on peer by default).
 type CrossCheckRequest struct {
 	Symbol      string
 	TxID        string
@@ -16,6 +17,12 @@ type CrossCheckRequest struct {
 	AccountID   string // audit / error messages only
 	BlockTime   int64  // SOL optional auxiliary
 	Source      string // auto_promote | manual_approve
+	// NativeStrict: EVM simple native leg (e.g. ETH OutputIndex=-1, non-contract). Compares peer tx from/to/value to newly.
+	NativeStrict     bool
+	NativeFrom       string
+	NativeTo         string
+	NativeAmount     string // decimal amount string (same semantics as newly.Amount)
+	NativeDecimals   int32  // e.g. 18 for ETH
 }
 
 // CrossCheckResult cross-source verification outcome.
