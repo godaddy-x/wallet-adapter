@@ -7,8 +7,9 @@ import (
 )
 
 // CrossCheckRequest first-scan anchor for Phase C (mapped from newly).
-// All chains: tx existence + block anchor. ETH native (NativeStrict): also from/to/value on eth_getTransactionByHash.
-// Token / contract legs: anchor only; log-level checks are optional future work (no re-extract on peer by default).
+// All chains: tx existence + block anchor.
+// ETH native (NativeStrict): from/to/value on eth_getTransactionByHash.
+// ETH token (TokenStrict): chain adapters may use Token* + eth_getTransactionReceipt Transfer log (optional until enabled per chain).
 type CrossCheckRequest struct {
 	Symbol      string
 	TxID        string
@@ -18,11 +19,19 @@ type CrossCheckRequest struct {
 	BlockTime   int64  // SOL optional auxiliary
 	Source      string // auto_promote | manual_approve
 	// NativeStrict: EVM simple native leg (e.g. ETH OutputIndex=-1, non-contract). Compares peer tx from/to/value to newly.
-	NativeStrict     bool
-	NativeFrom       string
-	NativeTo         string
-	NativeAmount     string // decimal amount string (same semantics as newly.Amount)
-	NativeDecimals   int32  // e.g. 18 for ETH
+	NativeStrict   bool
+	NativeFrom     string
+	NativeTo       string
+	NativeAmount   string // decimal amount string (same semantics as newly.Amount)
+	NativeDecimals int32  // e.g. 18 for ETH
+	// TokenStrict: contract token leg (e.g. ETH ERC20 OutputIndex>=0). Populated from newly for future receipt/log cross-check.
+	TokenStrict          bool
+	TokenContractAddress string // newly.ContractAddress
+	TokenLogIndex        int64  // newly.OutputIndex (ERC20 log index)
+	TokenFrom            string
+	TokenTo              string
+	TokenAmount   string // decimal string (newly.Amount / ToAddressV)
+	TokenDecimals int32  // newly.Decimals
 }
 
 // CrossCheckResult cross-source verification outcome.
