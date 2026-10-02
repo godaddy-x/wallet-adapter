@@ -6,32 +6,35 @@ import (
 	"strings"
 )
 
-// CrossCheckRequest first-scan anchor for Phase C (mapped from newly).
-// All chains: tx existence + block anchor.
-// ETH native (NativeStrict): from/to/value on eth_getTransactionByHash.
-// ETH token (TokenStrict): chain adapters may use Token* + eth_getTransactionReceipt Transfer log (optional until enabled per chain).
+// CrossCheckRequest first-scan anchor for Phase C (mapped from ow_trade_newly).
+//
+// outputIndex is chain-specific (see open_gateway docs/TRADE_OUTPUT_INDEX.md). Examples:
+//   ETH: -1 main coin value leg; >=0 + contract = ERC20 log index; -2 fee.
+//   BTC: >=0 vout receive; -3 per-payer net (disambiguate with NativeFrom / From on newly); -2 fee; not -1 for typical deposit.
+// Leg strict-match rules live in each chain's CrossCheckValidator (e.g. wallet-adapter-eth), not in this struct.
 type CrossCheckRequest struct {
 	Symbol      string
+	MainSymbol  string // chain family hint: BTC, ETH, TRX, …
 	TxID        string
-	BlockHeight uint64 // EVM/TRX height; SOL maps slot into this field at mapper if needed
-	BlockHash   string // ETH/BTC required when chain validates hash; SOL C2 may use slot-only rules
-	AccountID   string // audit / error messages only
-	BlockTime   int64  // SOL optional auxiliary
-	Source      string // auto_promote | manual_approve
-	// NativeStrict: EVM simple native leg (e.g. ETH OutputIndex=-1, non-contract). Compares peer tx from/to/value to newly.
-	NativeStrict   bool
+	BlockHeight uint64
+	BlockHash   string
+	AccountID   string
+	BlockTime   int64
+	Source      string
+	TxAction    string // send | receive | internal | fee | activation | …
+
+	ContractAddress string
+	OutputIndex     int64 // semantics vary by MainSymbol; always pass through from newly
+
 	NativeFrom     string
 	NativeTo       string
-	NativeAmount   string // decimal amount string (same semantics as newly.Amount)
-	NativeDecimals int32  // e.g. 18 for ETH
-	// TokenStrict: contract token leg (e.g. ETH ERC20 OutputIndex>=0). Populated from newly for future receipt/log cross-check.
-	TokenStrict          bool
-	TokenContractAddress string // newly.ContractAddress
-	TokenLogIndex        int64  // newly.OutputIndex (ERC20 log index)
-	TokenFrom            string
-	TokenTo              string
-	TokenAmount   string // decimal string (newly.Amount / ToAddressV)
-	TokenDecimals int32  // newly.Decimals
+	NativeAmount   string
+	NativeDecimals int32
+
+	TokenFrom     string
+	TokenTo       string
+	TokenAmount   string
+	TokenDecimals int32
 }
 
 // CrossCheckResult cross-source verification outcome.
@@ -49,7 +52,6 @@ type CrossCheckValidator interface {
 }
 
 // RunPromoteCrossCheck invokes Phase C when bs implements CrossCheckValidator and peers are configured.
-// Unconfigured or unsupported chains return nil (no-op).
 func RunPromoteCrossCheck(ctx context.Context, bs BlockScanner, req CrossCheckRequest) error {
 	if bs == nil {
 		return nil
