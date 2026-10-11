@@ -174,9 +174,11 @@ type BalanceQueryFunc = scanner.BalanceQueryFunc
 type CrossCheckValidator = scanner.CrossCheckValidator
 type CrossCheckRequest = scanner.CrossCheckRequest
 type CrossCheckResult = scanner.CrossCheckResult
+type LoopPause = scanner.LoopPause
 
 var (
 	NewBlockScannerBase  = scanner.NewBlockScannerBase
+	NewLoopPause         = scanner.NewLoopPause
 	RunPromoteCrossCheck = scanner.RunPromoteCrossCheck
 )
 

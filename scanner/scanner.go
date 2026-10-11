@@ -38,6 +38,8 @@ type BlockScanner interface {
 	// Run control: start/stop internal scan task.
 	Run() error
 	Pause() error
+	// ScanPaused reports RunScanLoop pause (admin blockStop); background scan must not use chain RPC while true.
+	ScanPaused() bool
 
 	// ScanBlockWithResult scans a block by height and returns summary result for external cursor advance and retry.
 	// Convention: error means "cannot complete scan at this height" (RPC failure, block missing, etc.); result.Success expresses business success/failure.
@@ -187,6 +189,9 @@ func (bs *Base) Stop() error {
 }
 
 func (bs *Base) Pause() error { return bs.Stop() }
+
+// ScanPaused is false for Base; chain scanners with RunScanLoop override when they implement Pause/Run.
+func (bs *Base) ScanPaused() bool { return false }
 
 func (bs *Base) Restart() error { return bs.Run() }
 

@@ -64,6 +64,9 @@ func ConvertError(err error) *AdapterError {
 		return nil
 	}
 	if ae, ok := err.(*AdapterError); ok {
+		if ae == nil {
+			return NewError(ErrUnknownException, "nil adapter error")
+		}
 		return ae
 	}
 	return &AdapterError{Code: ErrUnknownException, Msg: err.Error()}
